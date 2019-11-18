@@ -1,0 +1,42 @@
+﻿<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="clr-namespace:OGE_Avalonia.ViewModels;assembly=OGE_Avalonia"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        x:Class="OGE_Avalonia.Views.MainWindow"
+        Icon="/Assets/avalonia-logo.ico"
+        Title="OGE_Avalonia">
+
+    <Design.DataContext>
+        <vm:MainWindowViewModel/>
+    </Design.DataContext>
+
+  <Grid>
+    <Grid.RowDefinitions>
+      <RowDefinition Height="Auto"/>
+      <RowDefinition Height="*"/>
+    </Grid.RowDefinitions>
+    
+    <Menu Grid.Row="0">
+      <MenuItem Header="File">
+        <MenuItem Header="Open" Name="MenuOpenButton"/>
+        <MenuItem Header="Save" Name="MenuSaveButton"/>
+        <MenuItem Header="Save as" Name="MenuSaveAsButton"/>
+        <!--<Separator/>-->
+        <MenuItem Header="Import from xml" Name="MenuImportFromXmlButton"/>
+        <MenuItem Header="Export to xml" Name="MenuExportToXmlButton"/>
+        <!--<Separator/>-->
+        <MenuItem Header="Exit"/>
+      </MenuItem>
+      <MenuItem Header="View"/>
+      <MenuItem Header="Help">
+        <MenuItem Header="About"/>
+      </MenuItem>
+    </Menu>
+
+    <TextBlock Grid.Row="1" Text="{Binding Greeting}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+  </Grid>
+
+
+</Window>

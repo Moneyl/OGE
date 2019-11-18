@@ -1,0 +1,3 @@
+[submodule "OGE/Dependencies/Rfg-Tools"]
+	path = OGE/Dependencies/Rfg-Tools
+	url = https://github.com/Moneyl/Rfg-Tools.git
