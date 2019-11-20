@@ -18,13 +18,13 @@ namespace OGE
 
             ViewModel = new AppViewModel();
 
-            this.WhenActivated(disposable =>
-            {
-                //this.OneWayBind(ViewModel,
-                //        vm => vm.FileExplorerVm,
-                //        v => v.documentsPane.Root)
-                //    .DisposeWith(disposable);
-            });
+            //this.WhenActivated(disposable =>
+            //{
+            //    this.OneWayBind(ViewModel,
+            //            vm => vm.FileExplorerVm,
+            //            v => v.fileExplorerView.ViewModel)
+            //        .DisposeWith(disposable);
+            //});
         }
 
         private void MenuExit_OnClick(object sender, RoutedEventArgs e)

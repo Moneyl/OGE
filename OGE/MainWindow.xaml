@@ -12,6 +12,7 @@
         xmlns:avalonDockLayout="clr-namespace:Xceed.Wpf.AvalonDock.Layout;assembly=Xceed.Wpf.AvalonDock"
         xmlns:reactiveUi="http://reactiveui.net"
         xmlns:viewModels="clr-namespace:OGE.ViewModels"
+        xmlns:views="clr-namespace:OGE.Views"
         mc:Ignorable="d"
         Title="MainWindow" Height="450" Width="800">
     <Grid>
@@ -51,9 +52,106 @@
             
             <avalonDock:LayoutRoot>
                 <avalonDockLayout:LayoutPanel Orientation="Horizontal">
-                    <avalonDockLayout:LayoutDocumentPane x:Name="documentsPane"/>
-                    <avalonDockLayout:LayoutAnchorablePane x:Name="toolsPane"/>
+                    
+                    <avalonDock:LayoutAnchorablePane DockWidth="350">
+                        <avalonDock:LayoutAnchorable x:Name="documentsAnchorable" ContentId="Documents" 
+                                                     Title="File Explorer" ToolTip="Explore files and subfiles in the working directory."
+                                                     CanHide="False" CanClose="False">
+                            <!--<views:FileExplorerView x:Name="fileExplorerView"/>-->
+                            <TreeView>
+                                <TreeViewItem Header="activities.vpp_pc">
+                                    <TextBlock/>
+                                </TreeViewItem>
+                                <TreeViewItem Header="anims.vpp_pc">
+                                    <TextBlock/>
+                                </TreeViewItem>
+                                <TreeViewItem Header="chunks.vpp_pc">
+                                    <TextBlock/>
+                                </TreeViewItem>
+                                <TreeViewItem Header="cloth_sim.vpp_pc">
+                                    <TextBlock/>
+                                </TreeViewItem>
+                                <TreeViewItem Header="decals.vpp_pc">
+                                    <TextBlock/>
+                                </TreeViewItem>
+                                <TreeViewItem Header="dlc01_l0.vpp_pc">
+                                    <TextBlock/>
+                                </TreeViewItem>
+                                <TreeViewItem Header="dlc01_l1.vpp_pc">
+                                    <TextBlock/>
+                                </TreeViewItem>
+                                <TreeViewItem Header="dlc01_precache.vpp_pc">
+                                    <TextBlock/>
+                                </TreeViewItem>
+                                <TreeViewItem Header="misc.vpp_pc">
+                                    <TextBlock>
+                                        <Run>achievements.xtbl</Run>
+                                        <LineBreak/>
+                                        <Run>action_node_types.xtbl</Run>
+                                        <LineBreak/>
+                                        <Run>activity.xtbl</Run>
+                                        <LineBreak/>
+                                        <Run>activity_air_strike_defense.xtbl</Run>
+                                        <LineBreak/>
+                                        <Run>activity_air_strike_defense_text.xtbl</Run>
+                                    </TextBlock>
+                                </TreeViewItem>
+                                <TreeViewItem Header="missions.vpp_pc">
+                                    <TextBlock/>
+                                </TreeViewItem>
+                                <TreeViewItem Header="mp_common.vpp_pc">
+                                    <TextBlock/>
+                                </TreeViewItem>
+                                <TreeViewItem Header="zonescript_terr01.vpp_pc">
+                                    <TextBlock/>
+                                </TreeViewItem>
+                            </TreeView>
+                        </avalonDock:LayoutAnchorable>
+                    </avalonDock:LayoutAnchorablePane>
+
+                    <avalonDock:LayoutDocumentPaneGroup>
+                        <avalonDock:LayoutDocumentPane>
+                            <avalonDock:LayoutDocument ContentId="TestDoc1" Title="terr01_03_12.rfgzone_pc">
+                                <TextBox Text="TestDoc1 contents"/>
+                            </avalonDock:LayoutDocument>
+
+                            <avalonDock:LayoutDocument ContentId="TestDoc2" Title="always_loaded.cpeg_pc">
+                                <TextBox Text="TestDoc2 contents"/>
+                            </avalonDock:LayoutDocument>
+
+                            <avalonDock:LayoutDocument ContentId="TestDoc3" Title="weapons.xtbl">
+                                <TextBox Text="TestDoc2 contents"/>
+                            </avalonDock:LayoutDocument>
+                        </avalonDock:LayoutDocumentPane>
+                    </avalonDock:LayoutDocumentPaneGroup>
+
+                    <avalonDock:LayoutAnchorablePaneGroup DockWidth="250">
+                        <avalonDock:LayoutAnchorablePane>
+                            <avalonDock:LayoutAnchorable ContentId="ToolWindow1" Title="Properties">
+                                <TextBox Text=""/>
+                            </avalonDock:LayoutAnchorable>
+
+                            <avalonDock:LayoutAnchorable ContentId="ToolWindow2" Title="Find in files">
+                                <TextBox Text="Toolwindow2 contents"/>
+                            </avalonDock:LayoutAnchorable>
+                        </avalonDock:LayoutAnchorablePane>
+                    </avalonDock:LayoutAnchorablePaneGroup>
+
                 </avalonDockLayout:LayoutPanel>
+
+                <avalonDock:LayoutRoot.LeftSide>
+                    <avalonDock:LayoutAnchorSide>
+                        <avalonDock:LayoutAnchorGroup>
+                            <avalonDock:LayoutAnchorable Title="Map view" ContentId="LeftSideAnchorable1">
+                                <TextBox Text="LeftSideAnchorable1 contents"/>
+                            </avalonDock:LayoutAnchorable>
+
+                            <avalonDock:LayoutAnchorable Title="Modinfo generator" ContentId="LeftSideAnchorable2">
+                                <TextBox Text="LeftSideAnchorable2 contents"/>
+                            </avalonDock:LayoutAnchorable>
+                        </avalonDock:LayoutAnchorGroup>
+                    </avalonDock:LayoutAnchorSide>
+                </avalonDock:LayoutRoot.LeftSide>
             </avalonDock:LayoutRoot>
         </avalonDock:DockingManager>
 
