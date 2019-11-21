@@ -11,8 +11,6 @@
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800">
     <Grid>
-        <TreeViewItem Name="TreeItem" Margin="-20 0 0 0">
-            
-        </TreeViewItem>
+        <TreeViewItem Name="TreeItem" Margin="-20 0 0 0"/>
     </Grid>
 </reactiveUi:ReactiveUserControl>

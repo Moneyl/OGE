@@ -54,7 +54,7 @@ namespace OGE.ViewModels
             IsVirtualFile = isVirtualFile;
 
             var subFileListObservable = this.WhenAnyValue(x => x.FilePath)
-                .Where(x => File.Exists(FilePath) && IsPackfile())
+                .Where(x => IsPackfile() && File.Exists(FilePath))
                 .SelectMany(x => GenerateSubFileListTask());
             _subFileList = subFileListObservable.ToProperty(this, nameof(SubFileList), deferSubscription: true);
         }
