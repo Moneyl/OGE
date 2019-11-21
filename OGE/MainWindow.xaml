@@ -14,7 +14,7 @@
         xmlns:viewModels="clr-namespace:OGE.ViewModels"
         xmlns:views="clr-namespace:OGE.Views"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
+        Title="MainWindow" Height="800" Width="1280">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
@@ -105,14 +105,10 @@
 
                 <avalonDock:LayoutRoot.BottomSide>
                     <avalonDock:LayoutAnchorSide>
-                        <avalonDock:LayoutAnchorGroup >
-                            <avalonDock:LayoutAnchorable Title="Log" ContentId="Log">
-                                <VirtualizingStackPanel Margin="5 0 0 0">
-                                    <TextBlock Text="OGE started"/>
-                                    <TextBlock Text="OGE started."/>
-                                    <TextBlock Text="OGE started.."/>
-                                    <TextBlock Text="OGE started..."/>
-                                </VirtualizingStackPanel>
+                        <avalonDock:LayoutAnchorGroup>
+                            <avalonDock:LayoutAnchorable Title="Log" ContentId="Log" x:Name="LogAnchorable"
+                                                         AutoHideHeight="220">
+                                <VirtualizingStackPanel Margin="5 0 0 0" Name="LogStackPanel"/>
                             </avalonDock:LayoutAnchorable>
                         </avalonDock:LayoutAnchorGroup>
                     </avalonDock:LayoutAnchorSide>

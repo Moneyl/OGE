@@ -14,7 +14,7 @@ namespace OGE
         public MainWindow()
         {
             InitializeComponent();
-            //WindowLogger.SetLogPanel(LogBox);
+            WindowLogger.SetLogPanel(LogStackPanel);
 
             ViewModel = new AppViewModel();
 
