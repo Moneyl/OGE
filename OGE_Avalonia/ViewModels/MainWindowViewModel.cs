@@ -1,21 +1,35 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Dynamic;
 using System.Text;
 using Avalonia.Interactivity;
+using Dock.Model;
+using ReactiveUI;
 
 namespace OGE_Avalonia.ViewModels
 {
     public class MainWindowViewModel : ViewModelBase
     {
-        public string Greeting => "Welcome to Avalonia!";
+        private IDockFactory _factory;
+        private IView _layout;
+        private string _currentView;
 
-        private void MenuExit_OnClick(object sender, RoutedEventArgs e)
+        public IDockFactory Factory
         {
-#if DEBUG
-            var debug = 2; //Set breakpoint here for easy debugging
-#else
-            Close();
-#endif
+            get => _factory;
+            set => this.RaiseAndSetIfChanged(ref _factory, value);
+        }
+
+        public IView Layout
+        {
+            get => _layout;
+            set => this.RaiseAndSetIfChanged(ref _layout, value);
+        }
+
+        public string CurrentView
+        {
+            get => _currentView;
+            set => this.RaiseAndSetIfChanged(ref _currentView, value);
         }
     }
 }

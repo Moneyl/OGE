@@ -1,19 +1,30 @@
-﻿<Window x:Class="OGE.MainWindow"
+﻿<reactiveUi:ReactiveWindow 
+        x:TypeArguments="viewModels:AppViewModel" 
+        x:Class="OGE.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:OGE"
+        xmlns:mWindowLib="clr-namespace:MWindowLib;assembly=MWindowLib"
+        xmlns:avalonDock="http://schemas.xceed.com/wpf/xaml/avalondock"
+        xmlns:avalonDockControls="clr-namespace:Xceed.Wpf.AvalonDock.Controls;assembly=Xceed.Wpf.AvalonDock"
+        xmlns:avalonDockLayout="clr-namespace:Xceed.Wpf.AvalonDock.Layout;assembly=Xceed.Wpf.AvalonDock"
+        xmlns:reactiveUi="http://reactiveui.net"
+        xmlns:viewModels="clr-namespace:OGE.ViewModels"
+        xmlns:views="clr-namespace:OGE.Views"
         mc:Ignorable="d"
         Title="MainWindow" Height="450" Width="800">
     <Grid>
-        <!--<Grid.RowDefinitions>
-            <RowDefinition Height="*"/>
+        <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
-        </Grid.RowDefinitions>-->
-        <Menu>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="16"/>
+        </Grid.RowDefinitions>
+
+        <Menu Grid.Row="0">
             <MenuItem Header="File">
-                <MenuItem Header="Open" Name="MenuOpenButton"/>
+                <MenuItem Header="Open folder" Name="MenuOpenFolderButton"/>
                 <MenuItem Header="Save" Name="MenuSaveButton"/>
                 <MenuItem Header="Save as" Name="MenuSaveAsButton"/>
                 <Separator/>
@@ -25,5 +36,88 @@
             <MenuItem Header="View"/>
             <MenuItem Header="Help"/>
         </Menu>
+
+        <avalonDock:DockingManager Grid.Row="1"
+                             x:Name="dockingManager">
+                             <!--
+                             DataContext="{Binding AD_WorkSpace}"
+                             AnchorablesSource="{Binding Tools}" 
+                             DocumentsSource="{Binding Files}"
+                             ActiveContent="{Binding ActiveDocument, Mode=TwoWay, Converter={StaticResource ActiveDocumentConverter}}"-->
+                             
+
+            <avalonDock:DockingManager.Theme>
+                <avalonDock:Vs2013LightTheme/>
+            </avalonDock:DockingManager.Theme>
+            
+            <avalonDock:LayoutRoot>
+                <avalonDockLayout:LayoutPanel Orientation="Horizontal">
+                    
+                    <avalonDock:LayoutAnchorablePane DockWidth="350">
+                        <avalonDock:LayoutAnchorable x:Name="documentsAnchorable" ContentId="Documents" 
+                                                     Title="File Explorer" ToolTip="Explore files and subfiles in the working directory."
+                                                     CanHide="False" CanClose="False">
+                            <views:FileExplorerView x:Name="fileExplorerView"/>
+                        </avalonDock:LayoutAnchorable>
+                    </avalonDock:LayoutAnchorablePane>
+
+                    <avalonDock:LayoutDocumentPaneGroup>
+                        <avalonDock:LayoutDocumentPane>
+                            <avalonDock:LayoutDocument ContentId="TestDoc1" Title="TestDoc1 title">
+                                <TextBox Text="TestDoc1 contents"/>
+                            </avalonDock:LayoutDocument>
+
+                            <avalonDock:LayoutDocument ContentId="TestDoc2" Title="TestDoc2 title">
+                                <TextBox Text="TestDoc2 contents"/>
+                            </avalonDock:LayoutDocument>
+                        </avalonDock:LayoutDocumentPane>
+                    </avalonDock:LayoutDocumentPaneGroup>
+
+                    <avalonDock:LayoutAnchorablePaneGroup DockWidth="250">
+                        <avalonDock:LayoutAnchorablePane>
+                            <avalonDock:LayoutAnchorable ContentId="ToolWindow1" Title="Properties">
+                                <TextBox Text="ToolWindow1 contents"/>
+                            </avalonDock:LayoutAnchorable>
+
+                            <avalonDock:LayoutAnchorable ContentId="ToolWindow2" Title="Find in files">
+                                <TextBox Text="Toolwindow2 contents"/>
+                            </avalonDock:LayoutAnchorable>
+                        </avalonDock:LayoutAnchorablePane>
+                    </avalonDock:LayoutAnchorablePaneGroup>
+
+                </avalonDockLayout:LayoutPanel>
+
+                <avalonDock:LayoutRoot.LeftSide>
+                    <avalonDock:LayoutAnchorSide>
+                        <avalonDock:LayoutAnchorGroup>
+                            <avalonDock:LayoutAnchorable Title="Map view" ContentId="LeftSideAnchorable1" 
+                                                         AutoHideWidth="300">
+                                <TextBox Text="LeftSideAnchorable1 contents"/>
+                            </avalonDock:LayoutAnchorable>
+
+                            <avalonDock:LayoutAnchorable Title="Modinfo generator" ContentId="LeftSideAnchorable2"
+                                                         AutoHideWidth="300">
+                                <TextBox Text="LeftSideAnchorable2 contents"/>
+                            </avalonDock:LayoutAnchorable>
+                        </avalonDock:LayoutAnchorGroup>
+                    </avalonDock:LayoutAnchorSide>
+                </avalonDock:LayoutRoot.LeftSide>
+
+                <avalonDock:LayoutRoot.BottomSide>
+                    <avalonDock:LayoutAnchorSide>
+                        <avalonDock:LayoutAnchorGroup >
+                            <avalonDock:LayoutAnchorable Title="Log" ContentId="Log">
+                                <VirtualizingStackPanel Margin="5 0 0 0">
+                                    <TextBlock Text="OGE started"/>
+                                    <TextBlock Text="OGE started."/>
+                                    <TextBlock Text="OGE started.."/>
+                                    <TextBlock Text="OGE started..."/>
+                                </VirtualizingStackPanel>
+                            </avalonDock:LayoutAnchorable>
+                        </avalonDock:LayoutAnchorGroup>
+                    </avalonDock:LayoutAnchorSide>
+                </avalonDock:LayoutRoot.BottomSide>
+            </avalonDock:LayoutRoot>
+        </avalonDock:DockingManager>
     </Grid>
-</Window>
+</reactiveUi:ReactiveWindow>

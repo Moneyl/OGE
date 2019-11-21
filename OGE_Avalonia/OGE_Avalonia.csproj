@@ -14,8 +14,11 @@
     <AvaloniaResource Include="Assets\*" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Avalonia" Version="0.8.0" />
-    <PackageReference Include="Avalonia.Desktop" Version="0.8.0" />
-    <PackageReference Include="Avalonia.ReactiveUI" Version="0.8.0" />
+    <PackageReference Include="Avalonia" Version="0.8.3" />
+    <PackageReference Include="Avalonia.Desktop" Version="0.8.3" />
+    <PackageReference Include="Avalonia.ReactiveUI" Version="0.8.3" />
+    <PackageReference Include="Dock.Avalonia" Version="0.8.2" />
+    <PackageReference Include="Dock.Avalonia.Themes.Default" Version="0.8.2" />
+    <PackageReference Include="Dock.Model.ReactiveUI" Version="0.8.2" />
   </ItemGroup>
 </Project>
