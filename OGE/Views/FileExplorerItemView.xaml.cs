@@ -32,6 +32,16 @@ namespace OGE.Views
                         v => v.TreeItem.Header)
                     .DisposeWith(disposable);
 
+                this.Bind(ViewModel,
+                        vm => vm.IsSelected,
+                        v => v.TreeItem.IsSelected)
+                    .DisposeWith(disposable);
+
+                this.Bind(ViewModel,
+                        vm => vm.IsExpanded,
+                        v => v.TreeItem.IsExpanded)
+                    .DisposeWith(disposable);
+
                 this.OneWayBind(ViewModel,
                         vm => vm.SubFileList,
                         v => v.TreeItem.ItemsSource)

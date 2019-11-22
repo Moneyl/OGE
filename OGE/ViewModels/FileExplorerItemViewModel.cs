@@ -13,7 +13,12 @@ namespace OGE.ViewModels
         private bool _isVirtualFile;
         private string _shortName;
         private string _fileExtension;
-        private Packfile _packfile;
+
+        private bool _isSelected;
+        private bool _isExpanded;
+
+        //Todo: Probably should have a static class that owns all file data and manages parsing / saving / loading them
+        private Packfile _packfile; 
 
         private ObservableAsPropertyHelper<IEnumerable<FileExplorerItemViewModel>> _subFileList;
         public IEnumerable<FileExplorerItemViewModel> SubFileList => _subFileList.Value;
@@ -47,6 +52,18 @@ namespace OGE.ViewModels
             set => _fileExtension = value;
         }
 
+        public bool IsSelected
+        {
+            get => _isSelected;
+            set => this.RaiseAndSetIfChanged(ref _isSelected, value);
+        }
+
+        public bool IsExpanded //Todo: Check if performance gain from waiting to load/parse children until this is set to true
+        {
+            get => _isExpanded;
+            set => this.RaiseAndSetIfChanged(ref _isExpanded, value);
+        }
+
         public FileExplorerItemViewModel(string filePath, bool isVirtualFile = false)
         {
             FilePath = filePath;
@@ -54,7 +71,7 @@ namespace OGE.ViewModels
             IsVirtualFile = isVirtualFile;
 
             var subFileListObservable = this.WhenAnyValue(x => x.FilePath)
-                .Where(x => IsPackfile() && File.Exists(FilePath))
+                .Where(x => IsPackfile() && !IsVirtualFile && File.Exists(FilePath)) //Todo: Remove check once virtual files are supported
                 .SelectMany(x => GenerateSubFileListTask());
             _subFileList = subFileListObservable.ToProperty(this, nameof(SubFileList), deferSubscription: true);
         }
@@ -79,9 +96,6 @@ namespace OGE.ViewModels
 
             foreach (var filename in _packfile.Filenames)
             {
-                if(IsVirtualFile)
-                    continue;
-                
                 yield return new FileExplorerItemViewModel(filename, true);
             }
         }

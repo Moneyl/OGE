@@ -76,7 +76,14 @@
                     <avalonDock:LayoutAnchorablePaneGroup DockWidth="250">
                         <avalonDock:LayoutAnchorablePane>
                             <avalonDock:LayoutAnchorable ContentId="ToolWindow1" Title="Properties">
-                                <TextBox Text="ToolWindow1 contents"/>
+                                <TreeView>
+                                    <TreeViewItem Header="Fuck"/>
+                                    <TreeViewItem Header="Shit"/>
+                                    <TreeViewItem Header="Cunt">
+                                        <TreeViewItem Header="Damn"/>
+                                        <TreeViewItem Header="Bitch"/>
+                                    </TreeViewItem>
+                                </TreeView>
                             </avalonDock:LayoutAnchorable>
 
                             <avalonDock:LayoutAnchorable ContentId="ToolWindow2" Title="Find in files">
