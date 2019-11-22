@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
 using ReactiveUI;
@@ -7,7 +8,7 @@ using RfgTools.Formats.Packfiles;
 
 namespace OGE.ViewModels
 {
-    public class FileExplorerItemViewModel : ReactiveObject
+    public class FileExplorerItemViewModel : TreeItem
     {
         private string _filePath;
         private bool _isVirtualFile;
@@ -18,10 +19,11 @@ namespace OGE.ViewModels
         private bool _isExpanded;
 
         //Todo: Probably should have a static class that owns all file data and manages parsing / saving / loading them
-        private Packfile _packfile; 
+        private Packfile _packfile;
 
-        private ObservableAsPropertyHelper<IEnumerable<FileExplorerItemViewModel>> _subFileList;
-        public IEnumerable<FileExplorerItemViewModel> SubFileList => _subFileList.Value;
+        private ObservableAsPropertyHelper<IEnumerable<TreeItem>> _subFileList;
+        //public IEnumerable<FileExplorerItemViewModel> SubFileList => _subFileList.Value;
+        public override List<TreeItem> Children => _subFileList.Value.ToList();
 
         public string FilePath
         {
@@ -64,16 +66,29 @@ namespace OGE.ViewModels
             set => this.RaiseAndSetIfChanged(ref _isExpanded, value);
         }
 
+        public override object ViewModel => this;
+
         public FileExplorerItemViewModel(string filePath, bool isVirtualFile = false)
         {
             FilePath = filePath;
             //ShortName = Path.GetFileName(_filePath);
             IsVirtualFile = isVirtualFile;
 
-            var subFileListObservable = this.WhenAnyValue(x => x.FilePath)
-                .Where(x => IsPackfile() && !IsVirtualFile && File.Exists(FilePath)) //Todo: Remove check once virtual files are supported
-                .SelectMany(x => GenerateSubFileListTask());
-            _subFileList = subFileListObservable.ToProperty(this, nameof(SubFileList), deferSubscription: true);
+            //var subFileListObservable = this.WhenAnyValue(x => x.FilePath)
+            //    .Where(x => IsPackfile() && !IsVirtualFile && File.Exists(FilePath)) //Todo: Remove check once virtual files are supported
+            //    .SelectMany(x => GenerateSubFileListTask());
+            //_subFileList = subFileListObservable.ToProperty(this, nameof(Children), deferSubscription: true);
+
+            _subFileList = this.WhenAnyValue(x => x.FilePath)
+                .Where(Predicate) //Todo: Remove check once virtual files are supported
+                .SelectMany(x => GenerateSubFileListTask())
+                .ToProperty(this, x => x.Children);
+        }
+
+        private bool Predicate(string x)
+        {
+            bool val = IsPackfile() && !IsVirtualFile && File.Exists(FilePath);
+            return val;
         }
 
         private bool IsPackfile()
@@ -81,12 +96,12 @@ namespace OGE.ViewModels
             return FileExtension == ".vpp_pc" || FileExtension == ".str_pc";
         }
 
-        private async Task<IEnumerable<FileExplorerItemViewModel>> GenerateSubFileListTask()
+        private async Task<IEnumerable<TreeItem>> GenerateSubFileListTask()
         {
             return EnumerateSubFileList();
         }
 
-        private IEnumerable<FileExplorerItemViewModel> EnumerateSubFileList()
+        private IEnumerable<TreeItem> EnumerateSubFileList()
         {
             if (_packfile == null)
             {

@@ -15,8 +15,8 @@ namespace OGE.ViewModels
     {
         private string _workingDirectory;
 
-        private ObservableAsPropertyHelper<IEnumerable<FileExplorerItemViewModel>> _fileList;
-        public IEnumerable<FileExplorerItemViewModel> FileList => _fileList.Value;
+        private ObservableAsPropertyHelper<IEnumerable<TreeItem>> _fileList;
+        public IEnumerable<TreeItem> FileList => _fileList.Value;
 
         public FileExplorerViewModel(string workingDirectory)
         {
@@ -30,16 +30,25 @@ namespace OGE.ViewModels
                 WindowLogger.Log($"Error occured in FileExplorerViewModel.FileList OAPH: \"{error.Message}\""));
         }
 
-        private async Task<IEnumerable<FileExplorerItemViewModel>> GenerateFileListTask()
+        private async Task<IEnumerable<TreeItem>> GenerateFileListTask()
         {
             return EnumerateFileList();
         }
 
-        private IEnumerable<FileExplorerItemViewModel> EnumerateFileList()
+        private IEnumerable<TreeItem> EnumerateFileList()
         {
             foreach (var filePath in Directory.GetFiles(_workingDirectory))
             {
-                yield return new FileExplorerItemViewModel(filePath);
+                var newVal = new FileExplorerItemViewModel(filePath);
+                if (newVal.Children == null)
+                {
+                    var a = 2;
+                }
+                else
+                {
+                    var b = 2;
+                }
+                yield return newVal;
             }
         }
     }

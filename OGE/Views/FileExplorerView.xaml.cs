@@ -18,6 +18,7 @@ namespace OGE.Views
 
             this.WhenActivated(disposable =>
             {
+                //FileTree.ItemsSource = ViewModel.FileList;
                 this.OneWayBind(ViewModel,
                         vm => vm.FileList,
                         v => v.FileTree.ItemsSource)
