@@ -35,11 +35,20 @@ namespace OGE.ViewModels
             return EnumerateFileList();
         }
 
+        private bool IsPackfileExtension(string extension)
+        {
+            return extension == ".vpp_pc" || extension == ".str2_pc";
+        }
+
         private IEnumerable<TreeItem> EnumerateFileList()
         {
             foreach (var filePath in Directory.GetFiles(_workingDirectory))
             {
+                if(!IsPackfileExtension(Path.GetExtension(filePath)))
+                    continue;
+
                 var newVal = new FileExplorerItemViewModel(filePath);
+                newVal.FillChildrenList();
                 if (newVal.Children == null)
                 {
                     var a = 2;

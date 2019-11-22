@@ -23,7 +23,8 @@ namespace OGE.ViewModels
 
         private ObservableAsPropertyHelper<IEnumerable<TreeItem>> _subFileList;
         //public IEnumerable<FileExplorerItemViewModel> SubFileList => _subFileList.Value;
-        public override List<TreeItem> Children => _subFileList.Value.ToList();
+        //public override List<TreeItem> Children => _subFileList.Value.ToList();
+        //public override List<TreeItem> Children => new List<TreeItem>();
 
         public string FilePath
         {
@@ -79,10 +80,27 @@ namespace OGE.ViewModels
             //    .SelectMany(x => GenerateSubFileListTask());
             //_subFileList = subFileListObservable.ToProperty(this, nameof(Children), deferSubscription: true);
 
-            _subFileList = this.WhenAnyValue(x => x.FilePath)
-                .Where(Predicate) //Todo: Remove check once virtual files are supported
-                .SelectMany(x => GenerateSubFileListTask())
-                .ToProperty(this, x => x.Children);
+            //_subFileList = this.WhenAnyValue(x => x.FilePath)
+            //    .Where(Predicate) //Todo: Remove check once virtual files are supported
+            //    .SelectMany(x => GenerateSubFileListTask())
+            //    .ToProperty(this, x => x.Children);
+        }
+
+        public void FillChildrenList()
+        {
+            if (_packfile == null)
+            {
+                _packfile = new Packfile(false);
+                _packfile.ReadMetadata(FilePath);
+            }
+            if(_packfile.Filenames == null)
+                return;
+
+            //Children = new List<TreeItem>();
+            foreach (var filename in _packfile.Filenames)
+            {
+                 AddChild(new FileExplorerItemViewModel(filename, true));
+            }
         }
 
         private bool Predicate(string x)

@@ -38,7 +38,7 @@ namespace OGE.ViewModels
         }
 
         public abstract object ViewModel { get; }
-        public virtual List<TreeItem> Children { get; }
+        public List<TreeItem> Children { get; }
 
         public void AddChild(TreeItem child)
         {
