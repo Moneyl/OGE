@@ -1,7 +1,5 @@
 ﻿using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Reactive.Linq;
 using System.Threading.Tasks;
 using ReactiveUI;
 using RfgTools.Formats.Packfiles;
@@ -20,10 +18,7 @@ namespace OGE.ViewModels
 
         //Todo: Probably should have a static class that owns all file data and manages parsing / saving / loading them
         private Packfile _packfile;
-
-        private ObservableAsPropertyHelper<IEnumerable<TreeItem>> _subFileList;
-        //public IEnumerable<FileExplorerItemViewModel> SubFileList => _subFileList.Value;
-        public override List<TreeItem> Children => _subFileList.Value.ToList();
+        public Packfile Packfile => _packfile;
 
         public string FilePath
         {
@@ -71,18 +66,23 @@ namespace OGE.ViewModels
         public FileExplorerItemViewModel(string filePath, bool isVirtualFile = false)
         {
             FilePath = filePath;
-            //ShortName = Path.GetFileName(_filePath);
             IsVirtualFile = isVirtualFile;
+        }
 
-            //var subFileListObservable = this.WhenAnyValue(x => x.FilePath)
-            //    .Where(x => IsPackfile() && !IsVirtualFile && File.Exists(FilePath)) //Todo: Remove check once virtual files are supported
-            //    .SelectMany(x => GenerateSubFileListTask());
-            //_subFileList = subFileListObservable.ToProperty(this, nameof(Children), deferSubscription: true);
+        public void FillChildrenList()
+        {
+            if (_packfile == null)
+            {
+                _packfile = new Packfile(false);
+                _packfile.ReadMetadata(FilePath);
+            }
+            if(_packfile.Filenames == null)
+                return;
 
-            _subFileList = this.WhenAnyValue(x => x.FilePath)
-                .Where(Predicate) //Todo: Remove check once virtual files are supported
-                .SelectMany(x => GenerateSubFileListTask())
-                .ToProperty(this, x => x.Children);
+            foreach (var filename in _packfile.Filenames)
+            {
+                 AddChild(new FileExplorerItemViewModel(filename, true));
+            }
         }
 
         private bool Predicate(string x)

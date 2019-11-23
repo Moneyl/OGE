@@ -1,7 +1,7 @@
 ﻿//Source: https://github.com/condron/ReactiveUI-TreeView
 using System;
 using System.Collections.Generic;
-using System.Text;
+using System.Collections.ObjectModel;
 using ReactiveUI;
 
 namespace OGE.ViewModels
@@ -29,7 +29,7 @@ namespace OGE.ViewModels
         protected TreeItem(IEnumerable<TreeItem> children = null)
         {
 
-            Children = new List<TreeItem>();
+            Children = new ObservableCollection<TreeItem>();
             if (children == null) return;
             foreach (var child in children)
             {
@@ -38,7 +38,7 @@ namespace OGE.ViewModels
         }
 
         public abstract object ViewModel { get; }
-        public virtual List<TreeItem> Children { get; }
+        public ObservableCollection<TreeItem> Children { get; }
 
         public void AddChild(TreeItem child)
         {

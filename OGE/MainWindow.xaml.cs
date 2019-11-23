@@ -6,9 +6,6 @@ using ReactiveUI;
 
 namespace OGE
 {
-    /// <summary>
-    /// Interaction logic for MainWindow.xaml
-    /// </summary>
     public partial class MainWindow : ReactiveWindow<AppViewModel>
     {
         public MainWindow()
