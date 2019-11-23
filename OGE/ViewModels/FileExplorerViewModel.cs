@@ -1,12 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.IO;
-using System.Linq;
+using System.Reactive;
 using System.Reactive.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using OGE.Utility;
-using OGE.Views;
+using OGE.Events;
 using ReactiveUI;
 
 namespace OGE.ViewModels
@@ -14,25 +11,34 @@ namespace OGE.ViewModels
     public class FileExplorerViewModel : ReactiveObject
     {
         private string _workingDirectory;
+        public ObservableCollection<TreeItem> FileList = new ObservableCollection<TreeItem>();
 
-        private ObservableAsPropertyHelper<IEnumerable<TreeItem>> _fileList;
-        public IEnumerable<TreeItem> FileList => _fileList.Value;
+        public ReactiveCommand<object, Unit> SelectedItemChangedCommand;
+
+        public FileExplorerItemViewModel _selectedItem = null;
+        public FileExplorerItemViewModel SelectedItem
+        {
+            get => _selectedItem;
+            set
+            {
+                this.RaiseAndSetIfChanged(ref _selectedItem, value);
+                TriggerSelectedItemChangedEvent();
+            }
+        }
 
         public FileExplorerViewModel(string workingDirectory)
         {
             _workingDirectory = workingDirectory;
+            FillFilesList();
 
-            _fileList = this.WhenAnyValue(x => x._workingDirectory)
-                .Where(x => Directory.Exists(_workingDirectory))
-                .SelectMany(x => GenerateFileListTask())
-                .ToProperty(this, x => x.FileList);
-            _fileList.ThrownExceptions.Subscribe(error =>
-                WindowLogger.Log($"Error occured in FileExplorerViewModel.FileList OAPH: \"{error.Message}\""));
-        }
-
-        private async Task<IEnumerable<TreeItem>> GenerateFileListTask()
-        {
-            return EnumerateFileList();
+            MessageBus.Current.Listen<ChangeWorkingDirectoryEventArgs>()
+                .Where(args => !string.IsNullOrWhiteSpace(args.NewWorkingDirectory)
+                               && Directory.Exists(args.NewWorkingDirectory))
+                .Subscribe(action =>
+                {
+                    _workingDirectory = action.NewWorkingDirectory;
+                    FillFilesList();
+                });
         }
 
         private bool IsPackfileExtension(string extension)
@@ -40,25 +46,24 @@ namespace OGE.ViewModels
             return extension == ".vpp_pc" || extension == ".str2_pc";
         }
 
-        private IEnumerable<TreeItem> EnumerateFileList()
+        public void FillFilesList()
         {
-            foreach (var filePath in Directory.GetFiles(_workingDirectory))
+            var directoryFiles = Directory.GetFiles(_workingDirectory);
+            FileList.Clear();
+            foreach(var filePath in Directory.GetFiles(_workingDirectory))
             {
                 if(!IsPackfileExtension(Path.GetExtension(filePath)))
                     continue;
 
                 var newVal = new FileExplorerItemViewModel(filePath);
                 newVal.FillChildrenList();
-                if (newVal.Children == null)
-                {
-                    var a = 2;
-                }
-                else
-                {
-                    var b = 2;
-                }
-                yield return newVal;
+                FileList.Add(newVal);
             }
+        }
+
+        private void TriggerSelectedItemChangedEvent()
+        {
+            MessageBus.Current.SendMessage(new SelectedItemChangedEventArgs(_selectedItem));
         }
     }
 }

@@ -76,14 +76,7 @@
                     <avalonDock:LayoutAnchorablePaneGroup DockWidth="250">
                         <avalonDock:LayoutAnchorablePane>
                             <avalonDock:LayoutAnchorable ContentId="ToolWindow1" Title="Properties">
-                                <TreeView>
-                                    <TreeViewItem Header="A"/>
-                                    <TreeViewItem Header="B"/>
-                                    <TreeViewItem Header="C">
-                                        <TreeViewItem Header="C2"/>
-                                        <TreeViewItem Header="C3"/>
-                                    </TreeViewItem>
-                                </TreeView>
+                                <views:PropertiesPanelView/>
                             </avalonDock:LayoutAnchorable>
 
                             <avalonDock:LayoutAnchorable ContentId="ToolWindow2" Title="Find in files">
