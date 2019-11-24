@@ -2,11 +2,11 @@
 
 namespace OGE.Editor
 {
-    class FileRef
+    public class FileRef
     {
         private string _filename;
         private string _parentFile;
-        private bool _fileOpen;
+        private bool _fileOpen = false;
         private Stream _fileStream = Stream.Null;
 
         public string Filename
@@ -27,7 +27,10 @@ namespace OGE.Editor
             protected set => _fileOpen = value;
         }
 
-        FileRef(string filename, string parentFile)
+        public bool InEditorCache { get; private set; } = false;
+        public bool InProjectCache { get; private set; } = false;
+
+        public FileRef(string filename, string parentFile)
         {
             Filename = filename;
             ParentFile = parentFile;
@@ -50,11 +53,21 @@ namespace OGE.Editor
             return false;
         }
 
+        //Todo: Have separate global and project file caches, currently only has global one
         private bool TryOpenFile()
         {
             _fileStream.Close();
             _fileStream = Stream.Null;
-            
+            string filePath = $"{ProjectManager.GlobalCachePath}{ParentFile}\\{Filename}"; //Todo: Maybe cache this
+
+            //Check if file exists in EditorCache
+            if (!File.Exists(filePath))
+                return false;
+
+            //Todo: Add support for per-project edit cache, and check the active projects cache before editor cache
+            _fileStream = new FileStream(filePath, FileMode.Open);
+            return true;
+
             //Check if file exists in projects edit cache
                 //If so, open it
 
@@ -62,8 +75,6 @@ namespace OGE.Editor
                     //If in there, open
 
                     //Else, pull from vpp/str2 and save in cache
-
-            return false;
         }
     }
 }

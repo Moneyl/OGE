@@ -1,4 +1,7 @@
 ﻿using System.Reactive.Disposables;
+using System.Windows.Controls;
+using System.Windows.Input;
+using OGE.Events;
 using OGE.ViewModels;
 using ReactiveUI;
 
@@ -20,6 +23,15 @@ namespace OGE.Views
                         v => v.FileTree.SelectedItem)
                     .DisposeWith(disposable);
             });
+        }
+
+        public void OnItemMouseDoubleClick(object sender, MouseButtonEventArgs args)
+        {
+            var item = sender as TreeViewItem;
+            if(item == null)
+                return;
+
+            MessageBus.Current.SendMessage(new OpenFileEventArgs(item.Header as FileExplorerItemViewModel));
         }
     }
 }

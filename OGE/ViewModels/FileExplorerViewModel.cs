@@ -3,8 +3,13 @@ using System.Collections.ObjectModel;
 using System.IO;
 using System.Reactive;
 using System.Reactive.Linq;
+using System.Threading.Tasks;
+using System.Windows.Controls;
+using System.Windows.Input;
+using OGE.Editor;
 using OGE.Events;
 using ReactiveUI;
+using OGE.Helpers;
 
 namespace OGE.ViewModels
 {
@@ -13,9 +18,7 @@ namespace OGE.ViewModels
         private string _workingDirectory;
         public ObservableCollection<TreeItem> FileList = new ObservableCollection<TreeItem>();
 
-        public ReactiveCommand<object, Unit> SelectedItemChangedCommand;
-
-        public FileExplorerItemViewModel _selectedItem = null;
+        private FileExplorerItemViewModel _selectedItem = null;
         public FileExplorerItemViewModel SelectedItem
         {
             get => _selectedItem;
@@ -26,9 +29,19 @@ namespace OGE.ViewModels
             }
         }
 
+        public string WorkingDirectory
+        {
+            get => _workingDirectory;
+            set
+            {
+                ProjectManager.WorkingDirectory = value;
+                _workingDirectory = value;
+            }
+        }
+
         public FileExplorerViewModel(string workingDirectory)
         {
-            _workingDirectory = workingDirectory;
+            WorkingDirectory = workingDirectory;
             FillFilesList();
 
             MessageBus.Current.Listen<ChangeWorkingDirectoryEventArgs>()
@@ -36,28 +49,19 @@ namespace OGE.ViewModels
                                && Directory.Exists(args.NewWorkingDirectory))
                 .Subscribe(action =>
                 {
-                    _workingDirectory = action.NewWorkingDirectory;
+                    WorkingDirectory = action.NewWorkingDirectory;
                     FillFilesList();
                 });
         }
 
-        private bool IsPackfileExtension(string extension)
-        {
-            return extension == ".vpp_pc" || extension == ".str2_pc";
-        }
-
         public void FillFilesList()
         {
-            var directoryFiles = Directory.GetFiles(_workingDirectory);
             FileList.Clear();
-            foreach(var filePath in Directory.GetFiles(_workingDirectory))
+            foreach (var packfile in ProjectManager.WorkingDirectoryPackfiles)
             {
-                if(!IsPackfileExtension(Path.GetExtension(filePath)))
-                    continue;
-
-                var newVal = new FileExplorerItemViewModel(filePath);
-                newVal.FillChildrenList();
-                FileList.Add(newVal);
+                var explorerItem = new FileExplorerItemViewModel(packfile.PackfilePath, null);
+                explorerItem.FillChildrenList();
+                FileList.Add(explorerItem);
             }
         }
 

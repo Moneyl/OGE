@@ -16,6 +16,7 @@
                 <Style TargetType="{x:Type TreeViewItem}">
                     <Setter Property="IsExpanded" Value="{Binding IsExpanded, Mode=TwoWay}" />
                     <Setter Property="IsSelected" Value="{Binding IsSelected, Mode=TwoWay}" />
+                    <EventSetter Event="MouseDoubleClick" Handler="OnItemMouseDoubleClick" />
                 </Style>
                 <HierarchicalDataTemplate DataType="{x:Type viewModels:TreeItem}" ItemsSource="{Binding Children}">
                     <reactiveUi:ViewModelViewHost ViewModel="{Binding ViewModel}"/>

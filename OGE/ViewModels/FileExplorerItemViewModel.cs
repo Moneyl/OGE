@@ -20,6 +20,8 @@ namespace OGE.ViewModels
         private Packfile _packfile;
         public Packfile Packfile => _packfile;
 
+        public FileExplorerItemViewModel Parent { get; private set; }
+
         public string FilePath
         {
             get => _filePath;
@@ -63,9 +65,10 @@ namespace OGE.ViewModels
 
         public override object ViewModel => this;
 
-        public FileExplorerItemViewModel(string filePath, bool isVirtualFile = false)
+        public FileExplorerItemViewModel(string filePath, FileExplorerItemViewModel parent, bool isVirtualFile = false)
         {
             FilePath = filePath;
+            Parent = parent;
             IsVirtualFile = isVirtualFile;
         }
 
@@ -81,37 +84,7 @@ namespace OGE.ViewModels
 
             foreach (var filename in _packfile.Filenames)
             {
-                 AddChild(new FileExplorerItemViewModel(filename, true));
-            }
-        }
-
-        private bool Predicate(string x)
-        {
-            bool val = IsPackfile() && !IsVirtualFile && File.Exists(FilePath);
-            return val;
-        }
-
-        private bool IsPackfile()
-        {
-            return FileExtension == ".vpp_pc" || FileExtension == ".str_pc";
-        }
-
-        private async Task<IEnumerable<TreeItem>> GenerateSubFileListTask()
-        {
-            return EnumerateSubFileList();
-        }
-
-        private IEnumerable<TreeItem> EnumerateSubFileList()
-        {
-            if (_packfile == null)
-            {
-                _packfile = new Packfile(false);
-                _packfile.ReadMetadata(FilePath);
-            }
-
-            foreach (var filename in _packfile.Filenames)
-            {
-                yield return new FileExplorerItemViewModel(filename, true);
+                 AddChild(new FileExplorerItemViewModel(filename, this, true));
             }
         }
     }

@@ -1,4 +1,6 @@
 ﻿using System.Reactive.Disposables;
+using System.Windows.Input;
+using OGE.Events;
 using OGE.ViewModels;
 using ReactiveUI;
 
@@ -9,7 +11,6 @@ namespace OGE.Views
         public FileExplorerItemView()
         {
             InitializeComponent();
-
 
             this.WhenActivated(disposable =>
             {

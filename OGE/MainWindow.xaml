@@ -13,6 +13,7 @@
         xmlns:reactiveUi="http://reactiveui.net"
         xmlns:viewModels="clr-namespace:OGE.ViewModels"
         xmlns:views="clr-namespace:OGE.Views"
+        xmlns:avalonedit="http://icsharpcode.net/sharpdevelop/avalonedit"
         mc:Ignorable="d"
         Title="MainWindow" Height="800" Width="1280">
     <Grid>
@@ -62,15 +63,7 @@
                     </avalonDock:LayoutAnchorablePane>
 
                     <avalonDock:LayoutDocumentPaneGroup>
-                        <avalonDock:LayoutDocumentPane>
-                            <avalonDock:LayoutDocument ContentId="TestDoc1" Title="TestDoc1 title">
-                                <TextBox Text="TestDoc1 contents"/>
-                            </avalonDock:LayoutDocument>
-
-                            <avalonDock:LayoutDocument ContentId="TestDoc2" Title="TestDoc2 title">
-                                <TextBox Text="TestDoc2 contents"/>
-                            </avalonDock:LayoutDocument>
-                        </avalonDock:LayoutDocumentPane>
+                        <avalonDock:LayoutDocumentPane x:Name="DocumentPane"/>
                     </avalonDock:LayoutDocumentPaneGroup>
 
                     <avalonDock:LayoutAnchorablePaneGroup DockWidth="250">
