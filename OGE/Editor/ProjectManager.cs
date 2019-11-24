@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using OGE.Helpers;
 using OGE.Utility;
@@ -103,6 +104,7 @@ namespace OGE.Editor
             if (!Files.ContainsKey(parentFileName)) 
                 Files[parentFileName] = new List<FileRef>();
 
+
             var fileRefs = Files[parentFileName];
             string outputPath = $"{GlobalCachePath}{parentFileName}\\{filename}";
             string packfileOutputPath = $"{GlobalCachePath}{parentFileName}\\";
@@ -111,21 +113,28 @@ namespace OGE.Editor
             {
                 if (packfile.Filename == parentFileName)
                 {
-                    bool canExtract = packfile.CanExtractSingleFile();
-                    bool result = packfile.TryExtractSingleFile(filename, outputPath);
-                    if (canExtract && result)
+                    if (packfile.CanExtractSingleFile() && packfile.TryExtractSingleFile(filename, outputPath))
                     {
                         fileRefs.Add(new FileRef(filename, parentFileName));
                     }
                     else
                     {
-                        //Failed to extract single file, so extract whole vpp
-                        //Todo: Ask user if they want to extract the whole vpp
-                        WindowLogger.Log($"Failed to extract single file \"{filename}\" from \"{parentFilePath}\". Extracting entire packfile.");
-                        packfile.ExtractFileData(packfile.PackfilePath, packfileOutputPath);
-                        foreach (var subfileName in packfile.Filenames)
+                        try
                         {
-                            fileRefs.Add(new FileRef(subfileName, parentFileName));
+                            //Failed to extract single file, so extract whole vpp
+                            //Todo: Ask user if they want to extract the whole vpp
+                            WindowLogger.Log($"Failed to extract single file \"{filename}\" from \"{parentFilePath}\". Extracting entire packfile.");
+                            packfile.ExtractFileData(packfileOutputPath);
+                            foreach (var subfileName in packfile.Filenames)
+                            {
+                                fileRefs.Add(new FileRef(subfileName, parentFileName));
+                            }
+                        }
+                        catch (Exception e)
+                        {
+                            WindowLogger.Log($"Exception caught while trying to extract \"{parentFileName}\"! " +
+                                             $"Failed to extract files. Message: \"{e.Message}\"");
+                            throw;
                         }
                     }
                 }

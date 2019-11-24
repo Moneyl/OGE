@@ -40,7 +40,7 @@ namespace OGE
             });
 
             MessageBus.Current.Listen<OpenFileEventArgs>()
-                .Where(args => args.TargetItem != null)
+                .Where(args => args.TargetItem != null && args.TargetItem.Parent != null)
                 .Subscribe(HandleOpenFileEvent);
         }
 
@@ -55,14 +55,13 @@ namespace OGE
 
         private void HandleOpenFileEvent(OpenFileEventArgs args)
         {
+            var targetItem = args.TargetItem;
+            var parent = targetItem.Parent;
+            if (!ProjectManager.TryGetFile(targetItem.FilePath, parent.FilePath, out Stream docStream, true))
+                return;
+
             if (PathHelpers.IsXmlExtension(args.TargetItem.FileExtension))
             {
-                var targetItem = args.TargetItem;
-                var parent = targetItem.Parent;
-
-                if(!ProjectManager.TryGetFile(targetItem.FilePath, parent.FilePath, out Stream docStream, true))
-                    return;
-
                 string docString;
                 using (StreamReader reader = new StreamReader(docStream))
                 {
@@ -79,6 +78,7 @@ namespace OGE
                     }
                 };
                 DocumentPane.Children.Add(document);
+                DocumentPane.SelectedContentIndex = DocumentPane.ChildrenCount - 1;
             }
         }
     }

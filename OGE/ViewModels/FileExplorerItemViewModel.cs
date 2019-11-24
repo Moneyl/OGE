@@ -9,14 +9,12 @@ namespace OGE.ViewModels
     public class FileExplorerItemViewModel : TreeItem
     {
         private string _filePath;
-        private bool _isVirtualFile;
         private string _shortName;
         private string _fileExtension;
 
         private bool _isSelected;
         private bool _isExpanded;
 
-        //Todo: Probably should have a static class that owns all file data and manages parsing / saving / loading them
         private Packfile _packfile;
         public Packfile Packfile => _packfile;
 
@@ -31,12 +29,6 @@ namespace OGE.ViewModels
                 ShortName = Path.GetFileName(_filePath);
                 FileExtension = Path.GetExtension(_filePath);
             }
-        }
-
-        public bool IsVirtualFile
-        {
-            get => _isVirtualFile;
-            set => _isVirtualFile = value;
         }
 
         public string ShortName
@@ -65,26 +57,21 @@ namespace OGE.ViewModels
 
         public override object ViewModel => this;
 
-        public FileExplorerItemViewModel(string filePath, FileExplorerItemViewModel parent, bool isVirtualFile = false)
+        public FileExplorerItemViewModel(string filePath, FileExplorerItemViewModel parent, Packfile packfile = null)
         {
+            _packfile = packfile;
             FilePath = filePath;
             Parent = parent;
-            IsVirtualFile = isVirtualFile;
         }
 
         public void FillChildrenList()
         {
-            if (_packfile == null)
-            {
-                _packfile = new Packfile(false);
-                _packfile.ReadMetadata(FilePath);
-            }
-            if(_packfile.Filenames == null)
+            if(_packfile?.Filenames == null)
                 return;
 
             foreach (var filename in _packfile.Filenames)
             {
-                 AddChild(new FileExplorerItemViewModel(filename, this, true));
+                 AddChild(new FileExplorerItemViewModel(filename, this));
             }
         }
     }
