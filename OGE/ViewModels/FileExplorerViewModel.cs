@@ -59,7 +59,11 @@ namespace OGE.ViewModels
             FileList.Clear();
             foreach (var packfile in ProjectManager.WorkingDirectoryPackfiles)
             {
-                var explorerItem = new FileExplorerItemViewModel(packfile.PackfilePath, null, packfile);
+                var explorerItem = new FileExplorerItemViewModel(packfile.PackfilePath, null, packfile)
+                {
+                    IsTopLevelPackfile = true
+                };
+
                 explorerItem.FillChildrenList();
                 FileList.Add(explorerItem);
             }

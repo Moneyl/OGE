@@ -57,10 +57,10 @@ namespace OGE
         {
             var targetItem = args.TargetItem;
             var parent = targetItem.Parent;
-            if (!ProjectManager.TryGetFile(targetItem.FilePath, parent.FilePath, out Stream docStream, true))
+            if (!ProjectManager.TryGetFile(targetItem, out Stream docStream, true))
                 return;
 
-            if (PathHelpers.IsXmlExtension(args.TargetItem.FileExtension))
+            if (PathHelpers.IsTextExtension(args.TargetItem.FileExtension))
             {
                 string docString;
                 using (StreamReader reader = new StreamReader(docStream))

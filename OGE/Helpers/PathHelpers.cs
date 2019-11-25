@@ -10,7 +10,11 @@ namespace OGE.Helpers
             {".vpp_pc", ".str2_pc"};
         private static List<string> _xmlExtensions = new List<string>
             {".xml", ".xtbl", ".mtbl", ".gtodx", ".dtodx", ".vint_proj"};
-
+        private static List<string> _textExtensions = new List<string>
+        {
+            ".xml", ".xtbl", ".mtbl", ".gtodx", ".dtodx", ".vint_proj",
+            ".txt", ".lua"
+        };
 
         public static bool IsPackfilePath(string packfilePath)
         {
@@ -39,6 +43,16 @@ namespace OGE.Helpers
         public static bool IsAsmExtension(string extension)
         {
             return extension == ".asm_pc";
+        }
+
+
+        public static bool IsTextPath(string filePath)
+        {
+            return IsTextExtension(Path.GetExtension(filePath));
+        }
+        public static bool IsTextExtension(string extension)
+        {
+            return _textExtensions.Contains(extension);
         }
     }
 }

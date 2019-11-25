@@ -23,8 +23,8 @@ namespace OGE.ViewModels
             set => this.RaiseAndSetIfChanged(ref _workingDirectory, value);
         }
 
-        private ObservableAsPropertyHelper<FileExplorerViewModel> _fileExplorerVm;
-        public FileExplorerViewModel FileExplorerVm => _fileExplorerVm.Value;
+        //private ObservableAsPropertyHelper<FileExplorerViewModel> _fileExplorerVm;
+        //public FileExplorerViewModel FileExplorerVm => _fileExplorerVm.Value;
 
         public ReactiveCommand<Unit, Unit> OpenWorkingFolder { get; }
         //public ReactiveCommand<Unit, Unit> OpenFile { get; }

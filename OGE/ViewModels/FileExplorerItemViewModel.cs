@@ -59,6 +59,8 @@ namespace OGE.ViewModels
             set => this.RaiseAndSetIfChanged(ref _isExpanded, value);
         }
 
+        public bool IsTopLevelPackfile { get; set; } = false;
+
         public override object ViewModel => this;
 
         public FileExplorerItemViewModel(string filePath, FileExplorerItemViewModel parent, Packfile packfile = null)
