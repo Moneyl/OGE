@@ -74,7 +74,7 @@ namespace OGE.ViewModels
             if (_packfile == null && Parent != null)
             {
                 //Ignore non packfiles
-                if (!PathHelpers.IsPackfileExtension(FilePath)) 
+                if (!PathHelpers.IsPackfilePath(FilePath)) 
                     return;
 
                 //Try to see if it's in the cache
@@ -90,11 +90,13 @@ namespace OGE.ViewModels
                     if(Parent.Packfile == null)
                         return;
 
+                    //Containers don't have extension in asm_pc files, so strip extension for comparisons
+                    string filenameNoExtension = Path.GetFileNameWithoutExtension(FilePath);
                     foreach (var asmFile in Parent.Packfile.AsmFiles)
                     {
                         foreach (var container in asmFile.Containers)
                         {
-                            if (container.Name != FilePath)
+                            if (container.Name != filenameNoExtension)
                                 continue;
 
                             foreach (var primitive in container.Primitives)
