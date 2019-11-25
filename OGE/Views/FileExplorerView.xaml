@@ -11,6 +11,17 @@
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800">
     <Grid>
-        <TreeView Name="FileTree"/>
+        <TreeView Name="FileTree">
+            <TreeView.Resources>
+                <Style TargetType="{x:Type TreeViewItem}">
+                    <Setter Property="IsExpanded" Value="{Binding IsExpanded, Mode=TwoWay}" />
+                    <Setter Property="IsSelected" Value="{Binding IsSelected, Mode=TwoWay}" />
+                    <EventSetter Event="MouseDoubleClick" Handler="OnItemMouseDoubleClick" />
+                </Style>
+                <HierarchicalDataTemplate DataType="{x:Type viewModels:TreeItem}" ItemsSource="{Binding Children}">
+                    <reactiveUi:ViewModelViewHost ViewModel="{Binding ViewModel}"/>
+                </HierarchicalDataTemplate>
+            </TreeView.Resources>
+        </TreeView>
     </Grid>
 </reactiveUi:ReactiveUserControl>

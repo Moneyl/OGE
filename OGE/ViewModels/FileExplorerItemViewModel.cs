@@ -1,22 +1,28 @@
 ﻿using System.Collections.Generic;
 using System.IO;
-using System.Reactive.Linq;
+using System.Runtime.InteropServices.ComTypes;
 using System.Threading.Tasks;
+using System.Windows.Forms.Design;
+using OGE.Editor;
+using OGE.Helpers;
 using ReactiveUI;
 using RfgTools.Formats.Packfiles;
 
 namespace OGE.ViewModels
 {
-    public class FileExplorerItemViewModel : ReactiveObject
+    public class FileExplorerItemViewModel : TreeItem
     {
         private string _filePath;
-        private bool _isVirtualFile;
         private string _shortName;
         private string _fileExtension;
-        private Packfile _packfile;
 
-        private ObservableAsPropertyHelper<IEnumerable<FileExplorerItemViewModel>> _subFileList;
-        public IEnumerable<FileExplorerItemViewModel> SubFileList => _subFileList.Value;
+        private bool _isSelected;
+        private bool _isExpanded;
+
+        private Packfile _packfile;
+        public Packfile Packfile => _packfile;
+
+        public FileExplorerItemViewModel Parent { get; private set; }
 
         public string FilePath
         {
@@ -27,12 +33,6 @@ namespace OGE.ViewModels
                 ShortName = Path.GetFileName(_filePath);
                 FileExtension = Path.GetExtension(_filePath);
             }
-        }
-
-        public bool IsVirtualFile
-        {
-            get => _isVirtualFile;
-            set => _isVirtualFile = value;
         }
 
         public string ShortName
@@ -47,42 +47,81 @@ namespace OGE.ViewModels
             set => _fileExtension = value;
         }
 
-        public FileExplorerItemViewModel(string filePath, bool isVirtualFile = false)
+        public bool IsSelected
         {
+            get => _isSelected;
+            set => this.RaiseAndSetIfChanged(ref _isSelected, value);
+        }
+
+        public bool IsExpanded //Todo: Check if performance gain from waiting to load/parse children until this is set to true
+        {
+            get => _isExpanded;
+            set => this.RaiseAndSetIfChanged(ref _isExpanded, value);
+        }
+
+        public bool IsTopLevelPackfile { get; set; } = false;
+
+        public override object ViewModel => this;
+
+        public FileExplorerItemViewModel(string filePath, FileExplorerItemViewModel parent, Packfile packfile = null)
+        {
+            _packfile = packfile;
             FilePath = filePath;
-            //ShortName = Path.GetFileName(_filePath);
-            IsVirtualFile = isVirtualFile;
-
-            var subFileListObservable = this.WhenAnyValue(x => x.FilePath)
-                .Where(x => IsPackfile() && File.Exists(FilePath))
-                .SelectMany(x => GenerateSubFileListTask());
-            _subFileList = subFileListObservable.ToProperty(this, nameof(SubFileList), deferSubscription: true);
+            Parent = parent;
         }
 
-        private bool IsPackfile()
+        public void FillChildrenList()
         {
-            return FileExtension == ".vpp_pc" || FileExtension == ".str_pc";
-        }
-
-        private async Task<IEnumerable<FileExplorerItemViewModel>> GenerateSubFileListTask()
-        {
-            return EnumerateSubFileList();
-        }
-
-        private IEnumerable<FileExplorerItemViewModel> EnumerateSubFileList()
-        {
-            if (_packfile == null)
+            //Try to handle packfiles that are inside other packfiles
+            if (_packfile == null && Parent != null)
             {
-                _packfile = new Packfile(false);
-                _packfile.ReadMetadata(FilePath);
+                //Ignore non packfiles
+                if (!PathHelpers.IsPackfilePath(FilePath)) 
+                    return;
+
+                //Try to see if it's in the cache
+                if (ProjectManager.IsFileCached(FilePath, Parent.FilePath))
+                {
+                    //Todo: Add func to ProjectManager that gets path to cached file
+                    string packfilePath = $"{ProjectManager.GlobalCachePath}{Packfile.Filename}\\{Parent.FilePath}";
+                    _packfile = new Packfile(false);
+                    _packfile.ReadMetadata(packfilePath);
+                }
+                else //If not in cache, get subfiles list from asm_pc files in parent.
+                {
+                    if(Parent.Packfile == null)
+                        return;
+
+                    //Containers don't have extension in asm_pc files, so strip extension for comparisons
+                    string filenameNoExtension = Path.GetFileNameWithoutExtension(FilePath);
+                    foreach (var asmFile in Parent.Packfile.AsmFiles)
+                    {
+                        foreach (var container in asmFile.Containers)
+                        {
+                            if (container.Name != filenameNoExtension)
+                                continue;
+
+                            foreach (var primitive in container.Primitives)
+                            {
+                                var explorerItem = new FileExplorerItemViewModel(primitive.Name, this);
+                                //explorerItem.FillChildrenList();
+                                AddChild(explorerItem);
+                            }
+                        }
+                    }
+                }
             }
-
-            foreach (var filename in _packfile.Filenames)
+            else
             {
-                if(IsVirtualFile)
-                    continue;
-                
-                yield return new FileExplorerItemViewModel(filename, true);
+                if (_packfile?.Filenames == null)
+                    return;
+
+                foreach (var filename in _packfile.Filenames)
+                {
+                    var explorerItem = new FileExplorerItemViewModel(filename, this);
+                    explorerItem.FillChildrenList();
+                    AddChild(explorerItem);
+                }
             }
         }
     }

@@ -13,8 +13,9 @@
         xmlns:reactiveUi="http://reactiveui.net"
         xmlns:viewModels="clr-namespace:OGE.ViewModels"
         xmlns:views="clr-namespace:OGE.Views"
+        xmlns:avalonedit="http://icsharpcode.net/sharpdevelop/avalonedit"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
+        Title="MainWindow" Height="800" Width="1280">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
@@ -62,21 +63,13 @@
                     </avalonDock:LayoutAnchorablePane>
 
                     <avalonDock:LayoutDocumentPaneGroup>
-                        <avalonDock:LayoutDocumentPane>
-                            <avalonDock:LayoutDocument ContentId="TestDoc1" Title="TestDoc1 title">
-                                <TextBox Text="TestDoc1 contents"/>
-                            </avalonDock:LayoutDocument>
-
-                            <avalonDock:LayoutDocument ContentId="TestDoc2" Title="TestDoc2 title">
-                                <TextBox Text="TestDoc2 contents"/>
-                            </avalonDock:LayoutDocument>
-                        </avalonDock:LayoutDocumentPane>
+                        <avalonDock:LayoutDocumentPane x:Name="DocumentPane"/>
                     </avalonDock:LayoutDocumentPaneGroup>
 
                     <avalonDock:LayoutAnchorablePaneGroup DockWidth="250">
                         <avalonDock:LayoutAnchorablePane>
                             <avalonDock:LayoutAnchorable ContentId="ToolWindow1" Title="Properties">
-                                <TextBox Text="ToolWindow1 contents"/>
+                                <views:PropertiesPanelView/>
                             </avalonDock:LayoutAnchorable>
 
                             <avalonDock:LayoutAnchorable ContentId="ToolWindow2" Title="Find in files">
@@ -105,14 +98,10 @@
 
                 <avalonDock:LayoutRoot.BottomSide>
                     <avalonDock:LayoutAnchorSide>
-                        <avalonDock:LayoutAnchorGroup >
-                            <avalonDock:LayoutAnchorable Title="Log" ContentId="Log">
-                                <VirtualizingStackPanel Margin="5 0 0 0">
-                                    <TextBlock Text="OGE started"/>
-                                    <TextBlock Text="OGE started."/>
-                                    <TextBlock Text="OGE started.."/>
-                                    <TextBlock Text="OGE started..."/>
-                                </VirtualizingStackPanel>
+                        <avalonDock:LayoutAnchorGroup>
+                            <avalonDock:LayoutAnchorable Title="Log" ContentId="Log" x:Name="LogAnchorable"
+                                                         AutoHideHeight="220">
+                                <VirtualizingStackPanel Margin="5 0 0 0" Name="LogStackPanel"/>
                             </avalonDock:LayoutAnchorable>
                         </avalonDock:LayoutAnchorGroup>
                     </avalonDock:LayoutAnchorSide>

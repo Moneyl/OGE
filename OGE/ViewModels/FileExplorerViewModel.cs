@@ -1,44 +1,77 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.IO;
-using System.Linq;
+using System.Reactive;
 using System.Reactive.Linq;
-using System.Text;
 using System.Threading.Tasks;
-using OGE.Views;
+using System.Windows.Controls;
+using System.Windows.Input;
+using OGE.Editor;
+using OGE.Events;
 using ReactiveUI;
+using OGE.Helpers;
 
 namespace OGE.ViewModels
 {
     public class FileExplorerViewModel : ReactiveObject
     {
         private string _workingDirectory;
+        public ObservableCollection<TreeItem> FileList = new ObservableCollection<TreeItem>();
 
-        private ObservableAsPropertyHelper<IEnumerable<FileExplorerItemViewModel>> _fileList;
-        public IEnumerable<FileExplorerItemViewModel> FileList => _fileList.Value;
+        private FileExplorerItemViewModel _selectedItem = null;
+        public FileExplorerItemViewModel SelectedItem
+        {
+            get => _selectedItem;
+            set
+            {
+                this.RaiseAndSetIfChanged(ref _selectedItem, value);
+                TriggerSelectedItemChangedEvent();
+            }
+        }
+
+        public string WorkingDirectory
+        {
+            get => _workingDirectory;
+            set
+            {
+                ProjectManager.WorkingDirectory = value;
+                _workingDirectory = value;
+            }
+        }
 
         public FileExplorerViewModel(string workingDirectory)
         {
-            _workingDirectory = workingDirectory;
+            WorkingDirectory = workingDirectory;
+            FillFilesList();
 
-            _fileList = this.WhenAnyValue(x => x._workingDirectory)
-                .Where(x => Directory.Exists(_workingDirectory))
-                .SelectMany(x => GenerateFileListTask())
-                .ToProperty(this, x => x.FileList);
+            MessageBus.Current.Listen<ChangeWorkingDirectoryEventArgs>()
+                .Where(args => !string.IsNullOrWhiteSpace(args.NewWorkingDirectory)
+                               && Directory.Exists(args.NewWorkingDirectory))
+                .Subscribe(action =>
+                {
+                    WorkingDirectory = action.NewWorkingDirectory;
+                    FillFilesList();
+                });
         }
 
-        private async Task<IEnumerable<FileExplorerItemViewModel>> GenerateFileListTask()
+        public void FillFilesList()
         {
-            return EnumerateFileList();
-        }
-
-        private IEnumerable<FileExplorerItemViewModel> EnumerateFileList()
-        {
-            var fileList = Directory.GetFiles(_workingDirectory);
-            foreach (var filePath in Directory.GetFiles(_workingDirectory))
+            FileList.Clear();
+            foreach (var packfile in ProjectManager.WorkingDirectoryPackfiles)
             {
-                yield return new FileExplorerItemViewModel(filePath);
+                var explorerItem = new FileExplorerItemViewModel(packfile.PackfilePath, null, packfile)
+                {
+                    IsTopLevelPackfile = true
+                };
+
+                explorerItem.FillChildrenList();
+                FileList.Add(explorerItem);
             }
+        }
+
+        private void TriggerSelectedItemChangedEvent()
+        {
+            MessageBus.Current.SendMessage(new SelectedItemChangedEventArgs(_selectedItem));
         }
     }
 }

@@ -1,28 +1,37 @@
-﻿using System.ComponentModel;
-using System.Reactive.Disposables;
+﻿using System.Reactive.Disposables;
 using System.Windows.Controls;
+using System.Windows.Input;
+using OGE.Events;
 using OGE.ViewModels;
 using ReactiveUI;
-using Xceed.Wpf.AvalonDock.Layout;
 
 namespace OGE.Views
 {
-    /// <summary>
-    /// Interaction logic for FileExplorerView.xaml
-    /// </summary>
     public partial class FileExplorerView : ReactiveUserControl<FileExplorerViewModel>
     {
         public FileExplorerView()
         {
             InitializeComponent();
 
+            ViewModel = new FileExplorerViewModel(@"C:\Users\moneyl\RFG Unpack\data\");
+            FileTree.ItemsSource = ViewModel.FileList;
+
             this.WhenActivated(disposable =>
             {
-                this.OneWayBind(ViewModel,
-                        vm => vm.FileList,
-                        v => v.FileTree.ItemsSource)
+                this.Bind(ViewModel,
+                        vm => vm.SelectedItem,
+                        v => v.FileTree.SelectedItem)
                     .DisposeWith(disposable);
             });
+        }
+
+        public void OnItemMouseDoubleClick(object sender, MouseButtonEventArgs args)
+        {
+            var item = sender as TreeViewItem;
+            if(item == null)
+                return;
+
+            MessageBus.Current.SendMessage(new OpenFileEventArgs(item.Header as FileExplorerItemViewModel));
         }
     }
 }
