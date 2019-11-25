@@ -13,7 +13,7 @@ namespace OGE.Views
         {
             InitializeComponent();
 
-            ViewModel = new FileExplorerViewModel(@"C:\Users\moneyl\RFG Unpack\data\");
+            ViewModel = new FileExplorerViewModel(@"C:\Program Files (x86)\GOG Galaxy\Games\Red Faction Guerrilla Re-Mars-tered\data\");
             FileTree.ItemsSource = ViewModel.FileList;
 
             this.WhenActivated(disposable =>

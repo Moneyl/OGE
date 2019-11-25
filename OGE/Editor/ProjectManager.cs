@@ -147,13 +147,14 @@ namespace OGE.Editor
 
         private static void UpdateWorkingDirectoryData()
         {
+            Directory.CreateDirectory(_workingDirectory);
             _workingDirectoryPackfiles.Clear();
             var directoryFiles = Directory.GetFiles(WorkingDirectory);
 
             foreach (var filePath in directoryFiles)
             {
                 if(!PathHelpers.IsPackfilePath(filePath))
-                    return;
+                    continue;
 
                 var packfile = new Packfile(false);
                 packfile.ReadMetadata(filePath);
@@ -168,6 +169,9 @@ namespace OGE.Editor
 
         public static void ScanEditorCache()
         {
+            if (!Directory.Exists(GlobalCachePath))
+                Directory.CreateDirectory(GlobalCachePath);
+
             var cacheFolders = Directory.GetDirectories(GlobalCachePath);
             foreach (var cacheFolder in cacheFolders)
             {

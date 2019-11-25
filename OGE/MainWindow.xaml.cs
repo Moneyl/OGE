@@ -33,10 +33,10 @@ namespace OGE
                         v => v.MenuOpenFolderButton)
                     .DisposeWith(disposable);
 
-                this.OneWayBind(ViewModel,
-                        vm => vm.FileExplorerVm,
-                        v => v.fileExplorerView.ViewModel)
-                    .DisposeWith(disposable);
+                //this.OneWayBind(ViewModel,
+                //        vm => vm.FileExplorerVm,
+                //        v => v.fileExplorerView.ViewModel)
+                //    .DisposeWith(disposable);
             });
 
             MessageBus.Current.Listen<OpenFileEventArgs>()
