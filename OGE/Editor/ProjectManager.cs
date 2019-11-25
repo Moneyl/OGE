@@ -159,7 +159,21 @@ namespace OGE.Editor
 
         public static void ScanEditorCache()
         {
-            //Todo: Implement this func
+            var cacheFolders = Directory.GetDirectories(GlobalCachePath);
+            foreach (var cacheFolder in cacheFolders)
+            {
+                string parentFileName = Path.GetFileName(cacheFolder);
+                var files = Directory.GetFiles(cacheFolder);
+                if(files.Length <= 0)
+                    continue;
+
+                _files[parentFileName] = new List<FileRef>();
+                var fileList = _files[parentFileName];
+                foreach (var file in files)
+                {
+                    fileList.Add(new FileRef(Path.GetFileName(file), parentFileName));
+                }
+            }
         }
     }
 }
