@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using OGE.Helpers;
 using OGE.Utility;
 using RfgTools.Formats.Packfiles;
@@ -42,6 +43,23 @@ namespace OGE.Editor
             Directory.CreateDirectory(GlobalCachePath);
         }
 
+        public static bool TryGetFile(string filename, string parentFilePath, out Stream stream, bool extractIfNotCached = false)
+        {
+            stream = Stream.Null;
+            string parentFileName = Path.GetFileName(parentFilePath);
+
+            if (!IsFileCached(filename, parentFileName))
+            {
+                if (!extractIfNotCached)
+                    return false;
+
+                ExtractAndCacheFile(parentFilePath, filename);
+            }
+
+            stream = GetCachedFileStream(filename, parentFileName);
+            return stream != Stream.Null;
+        }
+
         public static bool IsFileCached(string filename, string parentFileName)
         {
             if (Files.TryGetValue(parentFileName, out List<FileRef> files))
@@ -76,67 +94,53 @@ namespace OGE.Editor
             return Stream.Null;
         }
 
-        public static bool TryGetFile(string filename, string parentFilePath, out Stream stream, bool extractIfNotFound = false)
-        {
-            stream = Stream.Null;
-            string parentFileName = Path.GetFileName(parentFilePath);
-
-            if (!IsFileCached(filename, parentFileName))
-            {
-                if (!extractIfNotFound)
-                    return false;
-
-                ExtractAndCacheFile(parentFilePath, filename);
-            }
-
-            stream = GetCachedFileStream(filename, parentFileName);
-            return stream != Stream.Null;
-        }
-
         public static void ExtractAndCacheFile(string parentFilePath, string filename)
         {
+            //Cases
+            // - First level file -- can single extract
+            // - First level file -- can't single extract
+            // - Second level file -- can single extract -> Might need to extract parent first
+            // - Second level file -- can't single extract -> Might need to extract parent first
+
+
+            //Set vars needed by func
             string parentFileName = Path.GetFileName(parentFilePath);
-            if (PathHelpers.IsPackfilePath(filename))
-                Directory.CreateDirectory($"{GlobalCachePath}{parentFileName}\\{filename}");
-            else
-                Directory.CreateDirectory($"{GlobalCachePath}{parentFileName}\\");
-
-            if (!Files.ContainsKey(parentFileName)) 
-                Files[parentFileName] = new List<FileRef>();
-
-
-            var fileRefs = Files[parentFileName];
             string outputPath = $"{GlobalCachePath}{parentFileName}\\{filename}";
             string packfileOutputPath = $"{GlobalCachePath}{parentFileName}\\";
+            //var targetFileRef = new FileRef(filename, parentFileName);
+            //bool subFileIsPackfile = PathHelpers.IsPackfilePath(filename);
 
-            foreach (var packfile in _workingDirectoryPackfiles)
+            //Ensure output folder exists
+            Directory.CreateDirectory(packfileOutputPath);
+
+            if (!Files.ContainsKey(parentFileName))
+                Files[parentFileName] = new List<FileRef>();
+            var fileRefs = Files[parentFileName];
+
+            var packfile = _workingDirectoryPackfiles.First(item => item.Filename == parentFileName);
+            //First, try to extract single file from vpp_pc
+            if (packfile.CanExtractSingleFile() && packfile.TryExtractSingleFile(filename, outputPath))
             {
-                if (packfile.Filename == parentFileName)
+                fileRefs.Add(new FileRef(filename, parentFileName));
+            }
+            else
+            {
+                try
                 {
-                    if (packfile.CanExtractSingleFile() && packfile.TryExtractSingleFile(filename, outputPath))
+                    //Failed to extract single file, so extract whole vpp
+                    //Todo: Ask user if they want to extract the whole vpp
+                    WindowLogger.Log($"Failed to extract single file \"{filename}\" from \"{parentFilePath}\". Extracting entire packfile.");
+                    packfile.ExtractFileData(packfileOutputPath);
+                    foreach (var subfileName in packfile.Filenames)
                     {
-                        fileRefs.Add(new FileRef(filename, parentFileName));
+                        fileRefs.Add(new FileRef(subfileName, parentFileName));
                     }
-                    else
-                    {
-                        try
-                        {
-                            //Failed to extract single file, so extract whole vpp
-                            //Todo: Ask user if they want to extract the whole vpp
-                            WindowLogger.Log($"Failed to extract single file \"{filename}\" from \"{parentFilePath}\". Extracting entire packfile.");
-                            packfile.ExtractFileData(packfileOutputPath);
-                            foreach (var subfileName in packfile.Filenames)
-                            {
-                                fileRefs.Add(new FileRef(subfileName, parentFileName));
-                            }
-                        }
-                        catch (Exception e)
-                        {
-                            WindowLogger.Log($"Exception caught while trying to extract \"{parentFileName}\"! " +
-                                             $"Failed to extract files. Message: \"{e.Message}\"");
-                            throw;
-                        }
-                    }
+                }
+                catch (Exception e)
+                {
+                    WindowLogger.Log($"Exception caught while trying to extract \"{parentFileName}\"! " +
+                                     $"Failed to extract files. Message: \"{e.Message}\"");
+                    throw;
                 }
             }
         }
@@ -153,7 +157,12 @@ namespace OGE.Editor
 
                 var packfile = new Packfile(false);
                 packfile.ReadMetadata(filePath);
+                packfile.ParseAsmFiles($"{GlobalCachePath}{packfile.Filename}\\");
+
                 _workingDirectoryPackfiles.Add(packfile);
+                
+                //Todo: Consider pre-extracting, or pre-parsing str2s so they're contents are known
+                //Todo: Alternatively, pre-parse asm_pc files and get str2 contents from them
             }
         }
 

@@ -1,6 +1,10 @@
 ﻿using System.Collections.Generic;
 using System.IO;
+using System.Runtime.InteropServices.ComTypes;
 using System.Threading.Tasks;
+using System.Windows.Forms.Design;
+using OGE.Editor;
+using OGE.Helpers;
 using ReactiveUI;
 using RfgTools.Formats.Packfiles;
 
@@ -66,12 +70,54 @@ namespace OGE.ViewModels
 
         public void FillChildrenList()
         {
-            if(_packfile?.Filenames == null)
-                return;
-
-            foreach (var filename in _packfile.Filenames)
+            //Try to handle packfiles that are inside other packfiles
+            if (_packfile == null && Parent != null)
             {
-                 AddChild(new FileExplorerItemViewModel(filename, this));
+                //Ignore non packfiles
+                if (!PathHelpers.IsPackfileExtension(FilePath)) 
+                    return;
+
+                //Try to see if it's in the cache
+                if (ProjectManager.IsFileCached(FilePath, Parent.FilePath))
+                {
+                    //Todo: Add func to ProjectManager that gets path to cached file
+                    string packfilePath = $"{ProjectManager.GlobalCachePath}{Packfile.Filename}\\{Parent.FilePath}";
+                    _packfile = new Packfile(false);
+                    _packfile.ReadMetadata(packfilePath);
+                }
+                else //If not in cache, get subfiles list from asm_pc files in parent.
+                {
+                    if(Parent.Packfile == null)
+                        return;
+
+                    foreach (var asmFile in Parent.Packfile.AsmFiles)
+                    {
+                        foreach (var container in asmFile.Containers)
+                        {
+                            if (container.Name != FilePath)
+                                continue;
+
+                            foreach (var primitive in container.Primitives)
+                            {
+                                var explorerItem = new FileExplorerItemViewModel(primitive.Name, this);
+                                //explorerItem.FillChildrenList();
+                                AddChild(explorerItem);
+                            }
+                        }
+                    }
+                }
+            }
+            else
+            {
+                if (_packfile?.Filenames == null)
+                    return;
+
+                foreach (var filename in _packfile.Filenames)
+                {
+                    var explorerItem = new FileExplorerItemViewModel(filename, this);
+                    explorerItem.FillChildrenList();
+                    AddChild(explorerItem);
+                }
             }
         }
     }

@@ -12,20 +12,22 @@ namespace OGE.Editor
         public string Filename
         {
             get => _filename;
-            protected set => _filename = value;
+            private set => _filename = value;
         }
 
         public string ParentFile
         {
             get => _parentFile;
-            protected set => _parentFile = value;
+            private set => _parentFile = value;
         }
 
         public bool FileOpen
         {
             get => _fileOpen;
-            protected set => _fileOpen = value;
+            private set => _fileOpen = value;
         }
+
+        public RfgFileTypes FileType { get; private set; }
 
         public bool InEditorCache { get; private set; } = false;
         public bool InProjectCache { get; private set; } = false;
@@ -34,6 +36,24 @@ namespace OGE.Editor
         {
             Filename = filename;
             ParentFile = parentFile;
+            UpdateFileType();
+        }
+
+        private void UpdateFileType()
+        {
+            string extension = Path.GetExtension(Filename);
+            if (extension == ".vpp_pc")
+            {
+                FileType = RfgFileTypes.Packfile;
+            }
+            else if (extension == ".str2_pc")
+            {
+                FileType = RfgFileTypes.Container;
+            }
+            else
+            {
+                FileType = RfgFileTypes.Primitive;
+            }
         }
 
         public bool TryOpenOrGet(out Stream stream)
