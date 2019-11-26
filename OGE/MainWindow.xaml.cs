@@ -9,8 +9,8 @@ using ICSharpCode.AvalonEdit;
 using ICSharpCode.AvalonEdit.Document;
 using ICSharpCode.AvalonEdit.Highlighting;
 using ICSharpCode.AvalonEdit.Highlighting.Xshd;
+using MahApps.Metro.Controls;
 using MLib.Interfaces;
-using MWindowLib;
 using OGE.Editor;
 using OGE.Events;
 using OGE.Helpers;
@@ -36,7 +36,7 @@ namespace OGE
         {
             InitializeComponent();
 
-            SetupAppearanceInfo();
+            //SetupAppearanceInfo();
 
             LoadAdditionalHighlightingDefinitions();
             WindowLogger.SetLogPanel(LogStackPanel);
