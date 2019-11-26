@@ -56,14 +56,14 @@ namespace OGE.Editor
             }
         }
 
-        public bool TryOpenOrGet(out Stream stream)
+        public bool TryOpenOrGet(out Stream stream, string parentFolderPathOverride = null)
         {
             if (FileOpen)
             {
                 stream = _fileStream;
                 return true;
             }
-            if (TryOpenFile())
+            if (TryOpenFile(parentFolderPathOverride))
             {
                 stream = _fileStream;
                 return true;
@@ -74,11 +74,19 @@ namespace OGE.Editor
         }
 
         //Todo: Have separate global and project file caches, currently only has global one
-        private bool TryOpenFile()
+        private bool TryOpenFile(string parentFolderPathOverride = null)
         {
             _fileStream.Close();
             _fileStream = Stream.Null;
-            string filePath = $"{ProjectManager.GlobalCachePath}{ParentFile}\\{Filename}"; //Todo: Maybe cache this
+            string filePath;
+            if (parentFolderPathOverride == null)
+            {
+                filePath = $"{ProjectManager.GlobalCachePath}{ParentFile}\\{Filename}"; //Todo: Maybe cache this
+            }
+            else
+            {
+                filePath = $"{parentFolderPathOverride}\\{Filename}";
+            }
 
             //Check if file exists in EditorCache
             if (!File.Exists(filePath))

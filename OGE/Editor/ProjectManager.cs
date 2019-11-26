@@ -87,7 +87,7 @@ namespace OGE.Editor
                 if (!ExtractFileIfNotCached(filename, $"{topParentFilePath}\\{parentFileName}", false, true, topParentFilePath))
                     return false;
 
-                stream = GetCachedFileStream(filename, parentKey);
+                stream = GetCachedFileStream(filename, parentKey, $"{GlobalCachePath}{parentKey}\\");
                 return stream != Stream.Null;
             }
 
@@ -111,10 +111,22 @@ namespace OGE.Editor
             if (!IsFileCached(targetFileName, parentFileName))
                 ExtractAndCacheFile(parentFilePath, targetFileName, targetIsPackfile, parentIsEmbeddedPackfile, topLevelParentPath);
 
-            return IsFileCached(targetFileName, parentFileName);
+            if (parentIsEmbeddedPackfile)
+            {
+                if (topLevelParentPath == null)
+                    return false;
+
+                string topLevelParentName = Path.GetFileName(topLevelParentPath);
+                string parentKey = $"{topLevelParentName}--{parentFileName}";
+                return IsFileCached(targetFileName, parentKey, $"{GlobalCachePath}{parentKey}\\");
+            }
+            else
+            { 
+                return IsFileCached(targetFileName, parentFileName);
+            }
         }
 
-        public static bool IsFileCached(string filename, string parentFileName)
+        public static bool IsFileCached(string filename, string parentFileName, string parentFolderPathOverride = null)
         {
             if (Files.TryGetValue(parentFileName, out List<FileRef> files))
             {
@@ -122,7 +134,7 @@ namespace OGE.Editor
                 {
                     if (subFile.Filename != filename)
                         continue;
-                    if (!subFile.TryOpenOrGet(out Stream fileStream))
+                    if (!subFile.TryOpenOrGet(out Stream fileStream, parentFolderPathOverride))
                         break;
 
                     return true;
@@ -131,7 +143,7 @@ namespace OGE.Editor
             return false;
         }
 
-        private static Stream GetCachedFileStream(string filename, string parentFilePath)
+        private static Stream GetCachedFileStream(string filename, string parentFilePath, string parentFolderPathOverride = null)
         {
             if (Files.TryGetValue(parentFilePath, out List<FileRef> files))
             {
@@ -139,7 +151,7 @@ namespace OGE.Editor
                 {
                     if (subFile.Filename != filename)
                         continue;
-                    if (!subFile.TryOpenOrGet(out Stream fileStream))
+                    if (!subFile.TryOpenOrGet(out Stream fileStream, parentFolderPathOverride))
                         break;
 
                     return fileStream;

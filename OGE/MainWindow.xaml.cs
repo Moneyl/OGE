@@ -3,9 +3,11 @@ using System.IO;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Windows;
+using System.Xml;
 using ICSharpCode.AvalonEdit;
 using ICSharpCode.AvalonEdit.Document;
 using ICSharpCode.AvalonEdit.Highlighting;
+using ICSharpCode.AvalonEdit.Highlighting.Xshd;
 using OGE.Editor;
 using OGE.Events;
 using OGE.Helpers;
@@ -21,6 +23,8 @@ namespace OGE
         public MainWindow()
         {
             InitializeComponent();
+
+            LoadAdditionalHighlightingDefinitions();
             WindowLogger.SetLogPanel(LogStackPanel);
             ProjectManager.Init();
 
@@ -74,11 +78,23 @@ namespace OGE
                     Content = new TextEditor
                     {
                         Document = new TextDocument(docString),
-                        SyntaxHighlighting = HighlightingManager.Instance.GetDefinition("XmlDoc")
+                        SyntaxHighlighting = HighlightingManager.Instance.GetDefinitionByExtension(targetItem.FileExtension),
+                        Margin = new Thickness(5, 0, 0, 0)
                     }
                 };
                 DocumentPane.Children.Add(document);
                 DocumentPane.SelectedContentIndex = DocumentPane.ChildrenCount - 1;
+            }
+        }
+
+        private void LoadAdditionalHighlightingDefinitions()
+        {
+            var highlightingManager = HighlightingManager.Instance;
+
+            using (var reader = new XmlTextReader(new FileStream(@".\Highlighting\Lua-Mode.xshd", FileMode.Open)))
+            {
+                IHighlightingDefinition definition = HighlightingLoader.Load(reader, highlightingManager);
+                highlightingManager.RegisterHighlighting("Lua-Mode", new []{".lua"}, definition);
             }
         }
     }
