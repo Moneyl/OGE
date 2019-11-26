@@ -14,7 +14,42 @@
         xmlns:avalonedit="http://icsharpcode.net/sharpdevelop/avalonedit"
         xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
         mc:Ignorable="d"
-        Title="MainWindow" Height="800" Width="1280">
+        Title="OGE" Height="800" Width="1280"
+        TitleBarHeight="30">
+
+    <mah:MetroWindow.TitleTemplate>
+        <DataTemplate>
+            <Grid>
+                <TextBlock
+                    Text="{Binding RelativeSource={RelativeSource AncestorType={x:Type mah:MetroWindow}},Path=Title}"
+                    HorizontalAlignment="Left" VerticalAlignment="Center"
+                    Padding="10,5,10,5"
+                    Margin="6,0"
+                    FontSize="14"
+                    FontWeight="Bold"
+                />
+            </Grid>
+        </DataTemplate>
+    </mah:MetroWindow.TitleTemplate>
+    <mah:MetroWindow.LeftWindowCommands>
+        <mah:WindowCommands>
+            <Menu Margin="5 5 0 0">
+                <MenuItem Header="File">
+                    <MenuItem Header="Open folder" Name="MenuOpenFolderButton"/>
+                    <MenuItem Header="Save" Name="MenuSaveButton"/>
+                    <MenuItem Header="Save as" Name="MenuSaveAsButton"/>
+                    <Separator/>
+                    <MenuItem Header="Import from xml" Name="MenuImportFromXmlButton"/>
+                    <MenuItem Header="Export to xml" Name="MenuExportToXmlButton"/>
+                    <Separator/>
+                    <MenuItem Header="Exit" Click="MenuExit_OnClick"/>
+                </MenuItem>
+                <MenuItem Header="View"/>
+                <MenuItem Header="Help"/>
+            </Menu>
+        </mah:WindowCommands>
+    </mah:MetroWindow.LeftWindowCommands>
+
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
@@ -22,7 +57,7 @@
             <RowDefinition Height="16"/>
         </Grid.RowDefinitions>
 
-        <Menu Grid.Row="0">
+        <!--<Menu Grid.Row="0">
             <MenuItem Header="File">
                 <MenuItem Header="Open folder" Name="MenuOpenFolderButton"/>
                 <MenuItem Header="Save" Name="MenuSaveButton"/>
@@ -35,7 +70,7 @@
             </MenuItem>
             <MenuItem Header="View"/>
             <MenuItem Header="Help"/>
-        </Menu>
+        </Menu>-->
 
         <avalonDock:DockingManager Grid.Row="1"
                              x:Name="dockingManager">
