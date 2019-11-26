@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
@@ -8,6 +9,8 @@ using ICSharpCode.AvalonEdit;
 using ICSharpCode.AvalonEdit.Document;
 using ICSharpCode.AvalonEdit.Highlighting;
 using ICSharpCode.AvalonEdit.Highlighting.Xshd;
+using MLib.Interfaces;
+using MWindowLib;
 using OGE.Editor;
 using OGE.Events;
 using OGE.Helpers;
@@ -18,11 +21,22 @@ using Xceed.Wpf.AvalonDock.Layout;
 
 namespace OGE
 {
-    public partial class MainWindow : ReactiveWindow<AppViewModel>
+    public partial class MainWindow : MetroWindow, IViewFor<AppViewModel> //ReactiveWindow<AppViewModel>
     {
+        object IViewFor.ViewModel
+        {
+            get => ViewModel;
+            set => ViewModel = (AppViewModel)value;
+        }
+        public AppViewModel ViewModel { get; set; }
+        public IAppearanceManager AppearanceManager { get; set; }
+        public IThemeInfos Themes { get; set; }
+
         public MainWindow()
         {
             InitializeComponent();
+
+            SetupAppearanceInfo();
 
             LoadAdditionalHighlightingDefinitions();
             WindowLogger.SetLogPanel(LogStackPanel);
@@ -96,6 +110,52 @@ namespace OGE
                 IHighlightingDefinition definition = HighlightingLoader.Load(reader, highlightingManager);
                 highlightingManager.RegisterHighlighting("Lua-Mode", new []{".lua"}, definition);
             }
+        }
+
+        private void SetupAppearanceInfo()
+        {
+            AppearanceManager = MLib.AppearanceManager.GetInstance();
+            Themes = AppearanceManager.CreateThemeInfos();
+            Themes.RemoveAllThemeInfos();
+            AppearanceManager.SetDefaultThemes(Themes, false);
+
+            // Adding Generic theme (which is really based on Light theme in MLib)
+            // but other components may have another theme definition for Generic
+            // so this is how it can be tested ...
+            //var uri1 = new Uri("/MLib;component/Themes/Generic.xaml", UriKind.RelativeOrAbsolute);
+            //var uri2 = new Uri("/MWindowLib;component/Themes/Generic.xaml", UriKind.RelativeOrAbsolute);
+            //var uri3 = 
+
+            //AppearanceManager.AddThemeResources("Generic", new List<Uri>
+            //{
+            //    new Uri("/MLib;component/Themes/Generic.xaml", UriKind.RelativeOrAbsolute),
+            //    new Uri("/MWindowLib;component/Themes/Generic.xaml", UriKind.RelativeOrAbsolute),
+            //    //new Uri("/MWindowDialogLib;component/Themes/Generic.xaml", UriKind.RelativeOrAbsolute),
+            //    new Uri("/BindToMLib;component/LightBrushs.xaml", UriKind.RelativeOrAbsolute)
+            //}, Themes);
+            AppearanceManager.AddThemeResources("Generic", new List<Uri>
+            {
+                new Uri("/MLib;component/Themes/Generic.xaml", UriKind.RelativeOrAbsolute),
+                new Uri("/MWindowLib;component/Themes/Generic.xaml", UriKind.RelativeOrAbsolute),
+                new Uri("/MWindowDialogLib;component/Themes/Generic.xaml", UriKind.RelativeOrAbsolute),
+                new Uri("/BindToMLib;component/LightBrushs.xaml", UriKind.RelativeOrAbsolute)
+            }, Themes);
+
+            // Add additional Dark and Light resources to those theme resources added above
+            AppearanceManager.AddThemeResources("Dark", new List<Uri>
+            {
+                //new Uri("/MWindowDialogLib;component/Themes/DarkIcons.xaml", UriKind.RelativeOrAbsolute),
+                //new Uri("/MWindowDialogLib;component/Themes/DarkBrushs.xaml", UriKind.RelativeOrAbsolute),
+                new Uri("/BindToMLib;component/DarkBrushs.xaml", UriKind.RelativeOrAbsolute),
+
+                ////new Uri("/MWindowLib;component/Themes/DarkBrushs.xaml", UriKind.RelativeOrAbsolute),
+                ////new Uri("/MDemo;component/Themes/MWindowLib/DarkBrushs.xaml", UriKind.RelativeOrAbsolute),
+
+                new Uri("/MDemo;component/Themes/Dark/DarkIcons.xaml", UriKind.RelativeOrAbsolute),
+                ////new Uri("/MDemo;component/Themes/MWindowDialogLib/DarkBrushs.xaml", UriKind.RelativeOrAbsolute).
+                new Uri("/MDemo;component/Demos/Views/Dialogs.xaml", UriKind.RelativeOrAbsolute)
+
+            }, Themes);
         }
     }
 }

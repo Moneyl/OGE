@@ -1,6 +1,5 @@
-﻿<reactiveUi:ReactiveWindow 
-        x:TypeArguments="viewModels:AppViewModel" 
-        x:Class="OGE.MainWindow"
+﻿<mWindowLib:MetroWindow
+    x:Class="OGE.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -48,7 +47,7 @@
                              
 
             <avalonDock:DockingManager.Theme>
-                <avalonDock:Vs2013LightTheme/>
+                <avalonDock:Vs2013DarkTheme/>
             </avalonDock:DockingManager.Theme>
             
             <avalonDock:LayoutRoot>
@@ -109,4 +108,4 @@
             </avalonDock:LayoutRoot>
         </avalonDock:DockingManager>
     </Grid>
-</reactiveUi:ReactiveWindow>
+</mWindowLib:MetroWindow>
