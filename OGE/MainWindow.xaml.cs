@@ -15,6 +15,7 @@ using OGE.Events;
 using OGE.Helpers;
 using OGE.Utility;
 using OGE.ViewModels;
+using OGE.Views;
 using ReactiveUI;
 using RfgTools.Formats.Textures;
 using Xceed.Wpf.AvalonDock.Layout;
@@ -118,7 +119,14 @@ namespace OGE
 
                 var pegFile = new PegFile();
                 pegFile.Read(cpuFileStream, gpuFileStream);
-                var a = 2;
+
+                var document = new LayoutDocument
+                {
+                    Title = args.TargetItem.ShortName,
+                    Content = new TextureViewerView(pegFile)
+                };
+                DocumentPane.Children.Add(document);
+                DocumentPane.SelectedContentIndex = DocumentPane.ChildrenCount - 1;
             }
         }
 
@@ -126,7 +134,6 @@ namespace OGE
         {
             LoadHighlightingDefinition(@".\Themes\Highlighting\Lua-Mode.xshd", "Lua-Mode", new []{".lua"});
             LoadHighlightingDefinition(@".\Themes\Highlighting\XML-Mode.xshd", "Xml", PathHelpers.XmlExtensions.AsArray());
-
         }
 
         private void LoadHighlightingDefinition(string definitionPath, string definitionName, string[] extensions)
