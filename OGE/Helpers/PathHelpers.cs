@@ -16,6 +16,10 @@ namespace OGE.Helpers
             ".txt", ".lua"
         };
 
+        public static IReadOnlyList<string> PackfileExtensions => _packfileExtensions;
+        public static IReadOnlyList<string> XmlExtensions => _xmlExtensions;
+        public static IReadOnlyList<string> TextExtensions => _textExtensions;
+
         public static bool IsPackfilePath(string packfilePath)
         {
             return IsPackfileExtension(Path.GetExtension(packfilePath));

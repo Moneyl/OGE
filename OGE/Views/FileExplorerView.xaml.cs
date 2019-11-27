@@ -13,7 +13,7 @@ namespace OGE.Views
         {
             InitializeComponent();
 
-            ViewModel = new FileExplorerViewModel(@"C:\Users\moneyl\RFG Unpack\data\");
+            ViewModel = new FileExplorerViewModel(@"C:\Users\moneyl\RFG Unpack\data");
             FileTree.ItemsSource = ViewModel.FileList;
 
             this.WhenActivated(disposable =>
