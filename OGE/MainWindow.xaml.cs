@@ -16,6 +16,7 @@ using OGE.Helpers;
 using OGE.Utility;
 using OGE.ViewModels;
 using ReactiveUI;
+using RfgTools.Formats.Textures;
 using Xceed.Wpf.AvalonDock.Layout;
 using HighlightingLoader = ICSharpCode.AvalonEdit.Highlighting.Xshd.HighlightingLoader;
 
@@ -71,7 +72,7 @@ namespace OGE
             if (!ProjectManager.TryGetFile(targetItem, out Stream docStream, true))
                 return;
 
-            if (PathHelpers.IsTextExtension(args.TargetItem.FileExtension))
+            if (PathHelpers.IsTextExtension(targetItem.FileExtension))
             {
                 string docString;
                 using (StreamReader reader = new StreamReader(docStream))
@@ -95,6 +96,29 @@ namespace OGE
                 };
                 DocumentPane.Children.Add(document);
                 DocumentPane.SelectedContentIndex = DocumentPane.ChildrenCount - 1;
+            }
+            else if (PathHelpers.IsTextureHeaderExtension(targetItem.FileExtension)) //Todo: Support opening via gpu files 
+            {
+                //Make sure both texture files are in cache, get their paths
+                //Load texture
+                //Create view/viewmodel for texture and pass texture to it
+                //Stick that view/viewmodel into a LayoutDocument
+
+                //Get gpu file name
+                if(!PathHelpers.TryGetGpuFileNameFromCpuFile(targetItem.FilePath, out string gpuFileName))
+                    return;
+
+                //Get cpu file stream from cache
+                if (!ProjectManager.TryGetFile(targetItem.FilePath, out Stream cpuFileStream, targetItem.Parent, true))
+                    return;
+
+                //Get gpu file stream from cache
+                if (!ProjectManager.TryGetFile(gpuFileName, out Stream gpuFileStream, targetItem.Parent, true))
+                    return;
+
+                var pegFile = new PegFile();
+                pegFile.Read(cpuFileStream, gpuFileStream);
+                var a = 2;
             }
         }
 

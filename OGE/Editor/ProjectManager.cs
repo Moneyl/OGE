@@ -48,23 +48,29 @@ namespace OGE.Editor
 
         public static bool TryGetFile(FileExplorerItemViewModel target, out Stream stream, bool extractIfNotCached = false)
         {
+            bool result = TryGetFile(target.FilePath, out Stream outStream, target.Parent, extractIfNotCached);
+            stream = outStream;
+            return result;
+        }
+
+        public static bool TryGetFile(string targetFilePath, out Stream stream, FileExplorerItemViewModel targetParent = null, bool extractIfNotCached = false)
+        {
             stream = Stream.Null;
-            if (target.Parent == null)
+            if (targetParent == null)
                 return false;
 
-            var parent = target.Parent;
-            string parentFileName = Path.GetFileName(parent.FilePath);
-            string parentFilePath = parent.FilePath;
-            string filename = Path.GetFileName(target.FilePath);
+            string parentFileName = Path.GetFileName(targetParent.FilePath);
+            string parentFilePath = targetParent.FilePath;
+            string filename = Path.GetFileName(targetFilePath);
 
             //If parent isn't top level packfile, must first extract it from it's parent.
-            if (!parent.IsTopLevelPackfile)
+            if (!targetParent.IsTopLevelPackfile)
             {
-                if (parent.Parent == null)
+                if (targetParent.Parent == null)
                     return false;
 
-                string topParentFilePath = parent.Parent.FilePath;
-                string topParentFileName = Path.GetFileName(parent.Parent.FilePath);
+                string topParentFilePath = targetParent.Parent.FilePath;
+                string topParentFileName = Path.GetFileName(targetParent.Parent.FilePath);
                 string parentKey = $"{topParentFileName}--{parentFileName}";
 
                 //If file is cached, just return it.

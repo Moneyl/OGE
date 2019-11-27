@@ -60,7 +60,6 @@ namespace OGE.ViewModels
         }
 
         public bool IsTopLevelPackfile { get; set; } = false;
-
         public override object ViewModel => this;
 
         public FileExplorerItemViewModel(string filePath, FileExplorerItemViewModel parent, Packfile packfile = null)
