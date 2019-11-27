@@ -9,7 +9,7 @@
   <Digits name = "Digits"
           bold = "false"
           italic = "false"
-          color = "Blue"/>
+          color = "#d19a66"/>
 
   <RuleSets>
     <RuleSet ignorecase="false">
@@ -18,7 +18,7 @@
       <Span name = "BlockComment"
             bold = "false"
             italic = "false"
-            color = "Green"
+            color = "#417439"
             stopateol = "false">
         <Begin>--[[</Begin>
         <End>]]</End>
@@ -27,7 +27,7 @@
       <Span name = "LineComment"
             bold = "false"
             italic = "false"
-            color = "Green"
+            color = "#417439"
             stopateol = "true">
         <Begin>--</Begin>
       </Span>
@@ -35,7 +35,7 @@
       <Span name = "String"
             bold = "false"
             italic = "false"
-            color = "Red"
+            color = "#89c363"
             stopateol = "true">
         <Begin>"</Begin>
         <End>"</End>
@@ -44,7 +44,7 @@
       <KeyWords name = "Punctuation"
                 bold = "false"
                 italic = "false"
-                color = "DarkGreen">
+                color = "#fcd711">
         <Key word = "?" />
         <Key word = "," />
         <Key word = "." />
@@ -73,7 +73,7 @@
       <KeyWords name = "Keywords"
                 bold="true"
                 italic="false"
-                color="Blue">
+                color="#935ba8">
         <Key word = "and" />
         <Key word = "break" />
         <Key word = "do" />

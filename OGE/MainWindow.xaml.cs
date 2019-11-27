@@ -1,14 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Windows;
+using System.Windows.Media;
 using System.Xml;
+using DynamicData.Kernel;
+using HL.HighlightingTheme;
+using HL.Manager;
+using HL.Xshtd.interfaces;
 using ICSharpCode.AvalonEdit;
 using ICSharpCode.AvalonEdit.Document;
 using ICSharpCode.AvalonEdit.Highlighting;
-using ICSharpCode.AvalonEdit.Highlighting.Xshd;
 using MahApps.Metro.Controls;
 using MLib.Interfaces;
 using OGE.Editor;
@@ -18,6 +23,7 @@ using OGE.Utility;
 using OGE.ViewModels;
 using ReactiveUI;
 using Xceed.Wpf.AvalonDock.Layout;
+using HighlightingLoader = ICSharpCode.AvalonEdit.Highlighting.Xshd.HighlightingLoader;
 
 namespace OGE
 {
@@ -29,6 +35,8 @@ namespace OGE
             set => ViewModel = (AppViewModel)value;
         }
         public AppViewModel ViewModel { get; set; }
+        //public ThemedHighlightingManager highlightingManager { get; set; }
+        public HighlightingManager highlightingManager { get; set; }
         public IAppearanceManager AppearanceManager { get; set; }
         public IThemeInfos Themes { get; set; }
 
@@ -36,7 +44,11 @@ namespace OGE
         {
             InitializeComponent();
 
-            //SetupAppearanceInfo();
+            //highlightingManager = new ThemedHighlightingManager();
+            highlightingManager = new HighlightingManager();
+            SetupAppearanceInfo();
+            //var theme = highlightingManager.CurrentTheme;
+            //highlightingManager.SetCurrentTheme("VS2019_Dark");
 
             LoadAdditionalHighlightingDefinitions();
             WindowLogger.SetLogPanel(LogStackPanel);
@@ -86,14 +98,18 @@ namespace OGE
                     docString = reader.ReadToEnd();
                 }
 
+                var definition = highlightingManager.GetDefinitionByExtension(targetItem.FileExtension);
                 var document = new LayoutDocument
                 {
                     Title = args.TargetItem.ShortName,
                     Content = new TextEditor
                     {
                         Document = new TextDocument(docString),
-                        SyntaxHighlighting = HighlightingManager.Instance.GetDefinitionByExtension(targetItem.FileExtension),
-                        Margin = new Thickness(5, 0, 0, 0)
+                        SyntaxHighlighting = definition,
+                        Margin = new Thickness(5, 0, 0, 0),
+                        ShowLineNumbers = true,
+                        LineNumbersForeground = Brushes.SteelBlue,
+                        Foreground = Brushes.LightGray
                     }
                 };
                 DocumentPane.Children.Add(document);
@@ -103,59 +119,23 @@ namespace OGE
 
         private void LoadAdditionalHighlightingDefinitions()
         {
-            var highlightingManager = HighlightingManager.Instance;
+            LoadHighlightingDefinition(@".\Highlighting\Lua-Mode.xshd", "Lua-Mode", new []{".lua"});
+            LoadHighlightingDefinition(@".\Highlighting\XML-Mode.xshd", "Xml", PathHelpers.XmlExtensions.AsArray());
 
-            using (var reader = new XmlTextReader(new FileStream(@".\Highlighting\Lua-Mode.xshd", FileMode.Open)))
+        }
+
+        private void LoadHighlightingDefinition(string definitionPath, string definitionName, string[] extensions)
+        {
+            using (var reader = new XmlTextReader(new FileStream(definitionPath, FileMode.Open)))
             {
                 IHighlightingDefinition definition = HighlightingLoader.Load(reader, highlightingManager);
-                highlightingManager.RegisterHighlighting("Lua-Mode", new []{".lua"}, definition);
+                highlightingManager.RegisterHighlighting(definitionName, extensions, definition);
             }
         }
 
         private void SetupAppearanceInfo()
         {
-            AppearanceManager = MLib.AppearanceManager.GetInstance();
-            Themes = AppearanceManager.CreateThemeInfos();
-            Themes.RemoveAllThemeInfos();
-            AppearanceManager.SetDefaultThemes(Themes, false);
 
-            // Adding Generic theme (which is really based on Light theme in MLib)
-            // but other components may have another theme definition for Generic
-            // so this is how it can be tested ...
-            //var uri1 = new Uri("/MLib;component/Themes/Generic.xaml", UriKind.RelativeOrAbsolute);
-            //var uri2 = new Uri("/MWindowLib;component/Themes/Generic.xaml", UriKind.RelativeOrAbsolute);
-            //var uri3 = 
-
-            //AppearanceManager.AddThemeResources("Generic", new List<Uri>
-            //{
-            //    new Uri("/MLib;component/Themes/Generic.xaml", UriKind.RelativeOrAbsolute),
-            //    new Uri("/MWindowLib;component/Themes/Generic.xaml", UriKind.RelativeOrAbsolute),
-            //    //new Uri("/MWindowDialogLib;component/Themes/Generic.xaml", UriKind.RelativeOrAbsolute),
-            //    new Uri("/BindToMLib;component/LightBrushs.xaml", UriKind.RelativeOrAbsolute)
-            //}, Themes);
-            AppearanceManager.AddThemeResources("Generic", new List<Uri>
-            {
-                new Uri("/MLib;component/Themes/Generic.xaml", UriKind.RelativeOrAbsolute),
-                new Uri("/MWindowLib;component/Themes/Generic.xaml", UriKind.RelativeOrAbsolute),
-                new Uri("/MWindowDialogLib;component/Themes/Generic.xaml", UriKind.RelativeOrAbsolute),
-                new Uri("/BindToMLib;component/LightBrushs.xaml", UriKind.RelativeOrAbsolute)
-            }, Themes);
-
-            // Add additional Dark and Light resources to those theme resources added above
-            AppearanceManager.AddThemeResources("Dark", new List<Uri>
-            {
-                //new Uri("/MWindowDialogLib;component/Themes/DarkIcons.xaml", UriKind.RelativeOrAbsolute),
-                //new Uri("/MWindowDialogLib;component/Themes/DarkBrushs.xaml", UriKind.RelativeOrAbsolute),
-                new Uri("/BindToMLib;component/DarkBrushs.xaml", UriKind.RelativeOrAbsolute),
-
-                ////new Uri("/MWindowLib;component/Themes/DarkBrushs.xaml", UriKind.RelativeOrAbsolute),
-                ////new Uri("/MDemo;component/Themes/MWindowLib/DarkBrushs.xaml", UriKind.RelativeOrAbsolute),
-
-                new Uri("/MDemo;component/Themes/Dark/DarkIcons.xaml", UriKind.RelativeOrAbsolute),
-                ////new Uri("/MDemo;component/Themes/MWindowDialogLib/DarkBrushs.xaml", UriKind.RelativeOrAbsolute).
-                new Uri("/MDemo;component/Demos/Views/Dialogs.xaml", UriKind.RelativeOrAbsolute)
-
-            }, Themes);
         }
     }
 }

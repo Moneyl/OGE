@@ -10,6 +10,7 @@
     <PackageReference Include="AvalonEdit" Version="6.0.0" />
     <PackageReference Include="Dirkster.AvalonDock" Version="3.6.2" />
     <PackageReference Include="Dirkster.AvalonDock.Themes.VS2013" Version="3.6.2" />
+    <PackageReference Include="Dirkster.HL" Version="1.0.3" />
     <PackageReference Include="Dirkster.MLib" Version="1.2.0" />
     <PackageReference Include="Dirkster.MWindowDialogLib" Version="1.1.0.2" />
     <PackageReference Include="Dirkster.MWindowLib" Version="1.2.1" />
