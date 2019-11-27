@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
@@ -8,14 +6,10 @@ using System.Windows;
 using System.Windows.Media;
 using System.Xml;
 using DynamicData.Kernel;
-using HL.HighlightingTheme;
-using HL.Manager;
-using HL.Xshtd.interfaces;
 using ICSharpCode.AvalonEdit;
 using ICSharpCode.AvalonEdit.Document;
 using ICSharpCode.AvalonEdit.Highlighting;
 using MahApps.Metro.Controls;
-using MLib.Interfaces;
 using OGE.Editor;
 using OGE.Events;
 using OGE.Helpers;
@@ -27,7 +21,7 @@ using HighlightingLoader = ICSharpCode.AvalonEdit.Highlighting.Xshd.Highlighting
 
 namespace OGE
 {
-    public partial class MainWindow : MetroWindow, IViewFor<AppViewModel> //ReactiveWindow<AppViewModel>
+    public partial class MainWindow : MetroWindow, IViewFor<AppViewModel>
     {
         object IViewFor.ViewModel
         {
@@ -35,21 +29,13 @@ namespace OGE
             set => ViewModel = (AppViewModel)value;
         }
         public AppViewModel ViewModel { get; set; }
-        //public ThemedHighlightingManager highlightingManager { get; set; }
-        public HighlightingManager highlightingManager { get; set; }
-        public IAppearanceManager AppearanceManager { get; set; }
-        public IThemeInfos Themes { get; set; }
+        public HighlightingManager HighlightingManager { get; set; }
 
         public MainWindow()
         {
             InitializeComponent();
 
-            //highlightingManager = new ThemedHighlightingManager();
-            highlightingManager = new HighlightingManager();
-            SetupAppearanceInfo();
-            //var theme = highlightingManager.CurrentTheme;
-            //highlightingManager.SetCurrentTheme("VS2019_Dark");
-
+            HighlightingManager = new HighlightingManager();
             LoadAdditionalHighlightingDefinitions();
             WindowLogger.SetLogPanel(LogStackPanel);
             ProjectManager.Init();
@@ -62,11 +48,6 @@ namespace OGE
                         vm => vm.OpenWorkingFolder,
                         v => v.MenuOpenFolderButton)
                     .DisposeWith(disposable);
-
-                //this.OneWayBind(ViewModel,
-                //        vm => vm.FileExplorerVm,
-                //        v => v.fileExplorerView.ViewModel)
-                //    .DisposeWith(disposable);
             });
 
             MessageBus.Current.Listen<OpenFileEventArgs>()
@@ -98,7 +79,7 @@ namespace OGE
                     docString = reader.ReadToEnd();
                 }
 
-                var definition = highlightingManager.GetDefinitionByExtension(targetItem.FileExtension);
+                var definition = HighlightingManager.GetDefinitionByExtension(targetItem.FileExtension);
                 var document = new LayoutDocument
                 {
                     Title = args.TargetItem.ShortName,
@@ -119,8 +100,8 @@ namespace OGE
 
         private void LoadAdditionalHighlightingDefinitions()
         {
-            LoadHighlightingDefinition(@".\Highlighting\Lua-Mode.xshd", "Lua-Mode", new []{".lua"});
-            LoadHighlightingDefinition(@".\Highlighting\XML-Mode.xshd", "Xml", PathHelpers.XmlExtensions.AsArray());
+            LoadHighlightingDefinition(@".\Themes\Highlighting\Lua-Mode.xshd", "Lua-Mode", new []{".lua"});
+            LoadHighlightingDefinition(@".\Themes\Highlighting\XML-Mode.xshd", "Xml", PathHelpers.XmlExtensions.AsArray());
 
         }
 
@@ -128,14 +109,9 @@ namespace OGE
         {
             using (var reader = new XmlTextReader(new FileStream(definitionPath, FileMode.Open)))
             {
-                IHighlightingDefinition definition = HighlightingLoader.Load(reader, highlightingManager);
-                highlightingManager.RegisterHighlighting(definitionName, extensions, definition);
+                IHighlightingDefinition definition = HighlightingLoader.Load(reader, HighlightingManager);
+                HighlightingManager.RegisterHighlighting(definitionName, extensions, definition);
             }
-        }
-
-        private void SetupAppearanceInfo()
-        {
-
         }
     }
 }

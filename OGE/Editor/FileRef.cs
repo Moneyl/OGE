@@ -92,17 +92,8 @@ namespace OGE.Editor
             if (!File.Exists(filePath))
                 return false;
 
-            //Todo: Add support for per-project edit cache, and check the active projects cache before editor cache
             _fileStream = new FileStream(filePath, FileMode.Open);
             return true;
-
-            //Check if file exists in projects edit cache
-                //If so, open it
-
-                //Else, check edited file cache
-                    //If in there, open
-
-                    //Else, pull from vpp/str2 and save in cache
         }
     }
 }

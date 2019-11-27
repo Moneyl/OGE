@@ -20,6 +20,7 @@ namespace OGE.Helpers
         public static IReadOnlyList<string> XmlExtensions => _xmlExtensions;
         public static IReadOnlyList<string> TextExtensions => _textExtensions;
 
+
         public static bool IsPackfilePath(string packfilePath)
         {
             return IsPackfileExtension(Path.GetExtension(packfilePath));

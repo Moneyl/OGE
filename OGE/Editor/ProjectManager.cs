@@ -9,13 +9,12 @@ using RfgTools.Formats.Packfiles;
 
 namespace OGE.Editor
 {
-    //Todo: Track open files, extracted files, and edited files (last one is per project, others should be cached cross-project)
     //Todo: Keep undo/redo stack and track changes
     //Todo: Generate modinfo.xml from changes
     public static class ProjectManager
     {
         private static string _workingDirectory;
-        private static Dictionary<string, List<FileRef>> _files = new Dictionary<string, List<FileRef>>(); //Todo: Populate _files
+        private static Dictionary<string, List<FileRef>> _files = new Dictionary<string, List<FileRef>>();
         private static List<Packfile> _workingDirectoryPackfiles = new List<Packfile>();
         private static Dictionary<string, Packfile> _embeddedPackfiles = new Dictionary<string, Packfile>();
 
@@ -80,8 +79,6 @@ namespace OGE.Editor
                 {
                     ExtractAndCacheFile(topParentFileName, parentFileName, true, false);
                 }
-                //if (!ExtractFileIfNotCached(parentFileName, topParentFilePath, true))
-                //    return false;
 
                 //Try to extract target file from parent
                 if (!ExtractFileIfNotCached(filename, $"{topParentFilePath}\\{parentFileName}", false, true, topParentFilePath))
@@ -160,25 +157,12 @@ namespace OGE.Editor
             return Stream.Null;
         }
 
+        //Todo: Make this support files that are two layers deep
         public static void ExtractAndCacheFile(string parentFilePath, string filename, bool targetIsPackfile = false, bool parentIsEmbeddedPackfile = false, string topLevelParentPath = null)
         {
-            //Cases
-            // - First level file -- can single extract
-            // - First level file -- can't single extract
-            // - Second level file -- can single extract -> Might need to extract parent first
-            // - Second level file -- can't single extract -> Might need to extract parent first
 
-            //Handle level 1 files
             if (parentIsEmbeddedPackfile && topLevelParentPath == null)
                 return;
-            //{
-                //Check if parent in Files dictionary, add it if not
-                //Get parent files list
-                //Get parent Packfile instance
-
-                //Check if can single file extract
-                    //If it can, extract and return
-                    //If it can't, do full extract and return
 
             string parentFileName = Path.GetFileName(parentFilePath);
             string parentKey;
@@ -199,7 +183,6 @@ namespace OGE.Editor
                 packfileOutputPath = $"{GlobalCachePath}{parentFileName}\\";
             }
 
-
             //Ensure output directory exists
             Directory.CreateDirectory(packfileOutputPath);
 
@@ -214,7 +197,7 @@ namespace OGE.Editor
             else
                 packfile = _workingDirectoryPackfiles.First(item => item.Filename == parentFileName);
 
-            //var packfile = _workingDirectoryPackfiles.First(item => item.Filename == parentFileName);
+
             if (packfile.CanExtractSingleFile() && packfile.TryExtractSingleFile(filename, outputPath))
             {
                 fileRefs.Add(new FileRef(filename, parentFileName));
@@ -241,50 +224,6 @@ namespace OGE.Editor
                 targetPackfile.ParseAsmFiles(targetCache);
                 _embeddedPackfiles[$"{parentFileName}--{filename}"] = targetPackfile;
             }
-            //}
-            //else //Handle level 2 files
-            //{
-            //    //Check if parent is in Files dictionary
-            //        //If not, check if parents parent is in dictionary
-            //            //Handle extracting single file of parent, or fully extracting parents parent, ideally by calling this func again
-            //            //Add parent to _embeddedPackfiles and parse metadata and asm_pc (Level two files shouldn't have asm_pc's, but do it anyways for consistency)
-            //        //If it is, get it and it's Packfile instance
-            //            //Try extract single file from parent, if not, fully extract parent
-
-            //    string topLevelParentName = Path.GetFileName(topLevelParentPath);
-            //    string parentFileName = Path.GetFileName(parentFilePath);
-            //    string parentKey = $"{topLevelParentName}--{parentFileName}";
-            //    string outputPath = $"{GlobalCachePath}{parentKey}\\{filename}";
-            //    string packfileOutputPath = $"{GlobalCachePath}{parentKey}\\";
-
-            //    //Ensure output directory exists
-            //    Directory.CreateDirectory(packfileOutputPath);
-
-            //    //If parent file not cached, need to extract it from it's parent.
-            //    if (!Files.ContainsKey(parentKey))
-            //    {
-            //        ExtractAndCacheFile(topLevelParentPath, parentFileName, true);
-            //    }
-            //    Files[parentKey] = new List<FileRef>();
-            //    var fileRefs = Files[parentKey];
-
-            //    var packfile = _embeddedPackfiles.First(item => item.Value.Filename == parentFileName).Value;
-            //    if (packfile.CanExtractSingleFile() && packfile.TryExtractSingleFile(filename, outputPath))
-            //    {
-            //        fileRefs.Add(new FileRef(filename, parentKey));
-            //    }
-            //    else
-            //    {
-            //        //Failed to extract single file, so extract whole vpp
-            //        //Todo: Ask user if they want to extract the whole vpp
-            //        WindowLogger.Log($"Failed to extract single file \"{filename}\" from \"{parentFilePath}\". Extracting entire packfile.");
-            //        packfile.ExtractFileData(packfileOutputPath);
-            //        foreach (var subfileName in packfile.Filenames)
-            //        {
-            //            fileRefs.Add(new FileRef(subfileName, parentKey));
-            //        }
-            //    }
-            //}
         }
 
         private static void UpdateWorkingDirectoryData()
@@ -303,9 +242,6 @@ namespace OGE.Editor
                 packfile.ParseAsmFiles($"{GlobalCachePath}{packfile.Filename}\\");
 
                 _workingDirectoryPackfiles.Add(packfile);
-                
-                //Todo: Consider pre-extracting, or pre-parsing str2s so they're contents are known
-                //Todo: Alternatively, pre-parse asm_pc files and get str2 contents from them
             }
         }
 
