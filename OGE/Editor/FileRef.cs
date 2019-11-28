@@ -56,6 +56,21 @@ namespace OGE.Editor
             }
         }
 
+        public bool FileExists(string parentFolderPathOverride = null)
+        {
+            string filePath;
+            if (parentFolderPathOverride == null)
+            {
+                filePath = $"{ProjectManager.GlobalCachePath}{ParentFile}\\{Filename}"; //Todo: Maybe cache this
+            }
+            else
+            {
+                filePath = $"{parentFolderPathOverride}\\{Filename}";
+            }
+
+            return File.Exists(filePath);
+        }
+
         public bool TryOpenOrGet(out Stream stream, string parentFolderPathOverride = null)
         {
             if (FileOpen)

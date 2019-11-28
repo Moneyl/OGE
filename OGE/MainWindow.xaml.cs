@@ -120,6 +120,8 @@ namespace OGE
 
                 var pegFile = new PegFile();
                 pegFile.Read(cpuFileStream, gpuFileStream);
+                cpuFileStream.Close();
+                gpuFileStream.Close();
 
                 var document = new LayoutDocument
                 {

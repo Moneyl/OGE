@@ -138,7 +138,7 @@ namespace OGE.Editor
                 {
                     if (subFile.Filename != filename)
                         continue;
-                    if (!subFile.TryOpenOrGet(out Stream fileStream, parentFolderPathOverride))
+                    if (!subFile.FileExists(parentFolderPathOverride))
                         break;
 
                     return true;
