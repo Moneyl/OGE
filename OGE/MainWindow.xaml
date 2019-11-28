@@ -11,7 +11,10 @@
         xmlns:fileExplorer="clr-namespace:OGE.Views.FileExplorer"
         mc:Ignorable="d"
         Title="OGE" Height="800" Width="1280"
-        TitleBarHeight="30">
+        TitleBarHeight="30"
+        GlowBrush="SteelBlue"
+        NonActiveGlowBrush="{DynamicResource MahApps.Brushes.Accent}"
+        NonActiveWindowTitleBrush="{DynamicResource MahApps.Brushes.Window.Background}">
 
     <mah:MetroWindow.TitleTemplate>
         <DataTemplate>
