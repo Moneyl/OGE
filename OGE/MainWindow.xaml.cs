@@ -118,9 +118,17 @@ namespace OGE
                         return;
 
                     var pegFile = new PegFile();
-                    pegFile.Read(cpuFileStream, gpuFileStream);
-                    cpuFileStream.Close();
-                    gpuFileStream.Close();
+                    try
+                    {
+                        pegFile.Read(cpuFileStream, gpuFileStream);
+                        cpuFileStream.Close();
+                        gpuFileStream.Close();
+                    }
+                    catch (Exception e)
+                    {
+                        WindowLogger.Log($"Failed to load peg file! Filename: \"{targetItem.FilePath}\". Message: \"{e.Message}\"");
+                        return;
+                    }
 
                     var document = new LayoutDocument
                     {
