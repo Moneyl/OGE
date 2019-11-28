@@ -70,68 +70,67 @@ namespace OGE
 
         private void HandleOpenFileEvent(OpenFileEventArgs args)
         {
-            var targetItem = args.TargetItem;
-            var parent = targetItem.Parent;
-            if (!ProjectManager.TryGetFile(targetItem, out Stream docStream, true))
-                return;
-
-            if (PathHelpers.IsTextExtension(targetItem.FileExtension))
+            //This syntax is to fix this issue: https://stackoverflow.com/questions/2329978/the-calling-thread-must-be-sta-because-many-ui-components-require-this
+            Application.Current.Dispatcher?.Invoke(() =>
             {
-                string docString;
-                using (StreamReader reader = new StreamReader(docStream))
-                {
-                    docString = reader.ReadToEnd();
-                }
+                var targetItem = args.TargetItem;
 
-                var definition = HighlightingManager.GetDefinitionByExtension(targetItem.FileExtension);
-                var document = new LayoutDocument
+                if (PathHelpers.IsTextExtension(targetItem.FileExtension))
                 {
-                    Title = args.TargetItem.ShortName,
-                    Content = new TextEditor
+                    if (!ProjectManager.TryGetFile(targetItem, out Stream docStream, true))
+                        return;
+
+                    string docString;
+                    using (StreamReader reader = new StreamReader(docStream))
                     {
-                        Document = new TextDocument(docString),
-                        SyntaxHighlighting = definition,
-                        Margin = new Thickness(5, 0, 0, 0),
-                        ShowLineNumbers = true,
-                        LineNumbersForeground = Brushes.SteelBlue,
-                        Foreground = Brushes.LightGray
+                        docString = reader.ReadToEnd();
                     }
-                };
-                DocumentPane.Children.Add(document);
-                DocumentPane.SelectedContentIndex = DocumentPane.ChildrenCount - 1;
-            }
-            else if (PathHelpers.IsTextureHeaderExtension(targetItem.FileExtension)) //Todo: Support opening via gpu files 
-            {
-                //Make sure both texture files are in cache, get their paths
-                //Load texture
-                //Create view/viewmodel for texture and pass texture to it
-                //Stick that view/viewmodel into a LayoutDocument
 
-                //Get gpu file name
-                if(!PathHelpers.TryGetGpuFileNameFromCpuFile(targetItem.FilePath, out string gpuFileName))
-                    return;
-
-                //Get cpu file stream from cache
-                if (!ProjectManager.TryGetFile(targetItem.FilePath, out Stream cpuFileStream, targetItem.Parent, true))
-                    return;
-
-                //Get gpu file stream from cache
-                if (!ProjectManager.TryGetFile(gpuFileName, out Stream gpuFileStream, targetItem.Parent, true))
-                    return;
-
-                var pegFile = new PegFile();
-                pegFile.Read(cpuFileStream, gpuFileStream);
-                cpuFileStream.Close();
-                gpuFileStream.Close();
-
-                var document = new LayoutDocument
+                    var definition = HighlightingManager.GetDefinitionByExtension(targetItem.FileExtension);
+                    var document = new LayoutDocument
+                    {
+                        Title = args.TargetItem.ShortName,
+                        Content = new TextEditor
+                        {
+                            Document = new TextDocument(docString),
+                            SyntaxHighlighting = definition,
+                            Margin = new Thickness(5, 0, 0, 0),
+                            ShowLineNumbers = true,
+                            LineNumbersForeground = Brushes.SteelBlue,
+                            Foreground = Brushes.LightGray
+                        }
+                    };
+                    DocumentPane.Children.Add(document);
+                    DocumentPane.SelectedContentIndex = DocumentPane.ChildrenCount - 1;
+                }
+                else if (PathHelpers.IsTextureHeaderExtension(targetItem.FileExtension)) //Todo: Support opening via gpu files 
                 {
-                    Title = args.TargetItem.ShortName,
-                    Content = new TextureViewerView(pegFile)
-                };
-                DocumentPane.Children.Add(document);
-                DocumentPane.SelectedContentIndex = DocumentPane.ChildrenCount - 1;
-            }
+                    //Get gpu file name
+                    if (!PathHelpers.TryGetGpuFileNameFromCpuFile(targetItem.FilePath, out string gpuFileName))
+                        return;
+
+                    //Get cpu file stream from cache
+                    if (!ProjectManager.TryGetFile(targetItem.FilePath, out Stream cpuFileStream, targetItem.Parent, true))
+                        return;
+
+                    //Get gpu file stream from cache
+                    if (!ProjectManager.TryGetFile(gpuFileName, out Stream gpuFileStream, targetItem.Parent, true))
+                        return;
+
+                    var pegFile = new PegFile();
+                    pegFile.Read(cpuFileStream, gpuFileStream);
+                    cpuFileStream.Close();
+                    gpuFileStream.Close();
+
+                    var document = new LayoutDocument
+                    {
+                        Title = args.TargetItem.ShortName,
+                        Content = new TextureViewerView(pegFile)
+                    };
+                    DocumentPane.Children.Add(document);
+                    DocumentPane.SelectedContentIndex = DocumentPane.ChildrenCount - 1;
+                }
+            });
         }
 
         private void LoadAdditionalHighlightingDefinitions()
