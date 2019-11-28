@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Reactive.Linq;
@@ -52,8 +53,10 @@ namespace OGE.ViewModels.FileExplorer
         public void FillFilesList()
         {
             FileList.Clear();
-            foreach (var packfile in ProjectManager.WorkingDirectoryPackfiles)
+            //Assuming that any packfile in this list is already confirmed to be a packfile by ProjectManager
+            for (var i = 0; i < ProjectManager.WorkingDirectoryPackfiles.Count; i++)
             {
+                var packfile = ProjectManager.WorkingDirectoryPackfiles[i];
                 var explorerItem = new FileExplorerItemViewModel(packfile.PackfilePath, null, packfile)
                 {
                     IsTopLevelPackfile = true
