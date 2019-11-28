@@ -65,5 +65,18 @@ namespace OGE.Views.TextureViewer
                 ImageViewBorder.Background = _checkeredImageBrush;
             }
         }
+
+        private void ContextMenuExtractSingleTexture_OnClick(object sender, RoutedEventArgs e)
+        {
+            if(TextureList.SelectedIndex == -1)
+                return;
+
+            ViewModel.ExtractSingleTexture(TextureList.SelectedIndex);
+        }
+
+        private void ExtractAllTexturesButton_OnClick(object sender, RoutedEventArgs e)
+        {
+            ViewModel.ExtractAllTextures();
+        }
     }
 }

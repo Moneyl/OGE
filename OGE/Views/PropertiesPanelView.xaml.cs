@@ -8,7 +8,6 @@ using OGE.Events;
 using OGE.ViewModels;
 using OGE.ViewModels.FileExplorer;
 using ReactiveUI;
-using RfgTools.Formats.Packfiles;
 
 namespace OGE.Views
 {
