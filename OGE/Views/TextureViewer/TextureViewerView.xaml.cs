@@ -1,15 +1,19 @@
-﻿using System.Reactive.Disposables;
-using System.Windows.Controls;
-using System.Windows.Forms;
-using OGE.Utility;
+﻿using System;
+using System.Reactive.Disposables;
+using System.Windows;
+using System.Windows.Media;
+using System.Windows.Media.Imaging;
 using OGE.ViewModels.TextureViewer;
 using ReactiveUI;
 using RfgTools.Formats.Textures;
+using CheckBox = System.Windows.Controls.CheckBox;
 
 namespace OGE.Views.TextureViewer
 {
     public partial class TextureViewerView : ReactiveUserControl<TextureViewerViewModel>
     {
+        private ImageBrush _checkeredImageBrush;
+
         public TextureViewerView()
         {
 
@@ -40,6 +44,26 @@ namespace OGE.Views.TextureViewer
                 //Set first entry as selected item
                 ViewModel.SelectedItem = TextureList.Items[0] as TextureEntryViewModel;
             });
+        }
+
+        private void BackgroundCheckbox_OnClick(object sender, RoutedEventArgs e)
+        {
+            var isChecked = ((CheckBox)sender).IsChecked;
+            if (isChecked != null && (bool)isChecked)
+            {
+                _checkeredImageBrush = (ImageBrush)ImageViewBorder.Background;
+                var uri = new Uri("pack://application:,,,/OGE;component/Resources/Solid.png");
+                ImageViewBorder.Background = new ImageBrush(new BitmapImage(uri))
+                {
+                    TileMode = TileMode.Tile,
+                    ViewboxUnits = BrushMappingMode.Absolute,
+                    Viewport = new Rect(0, 0, 20, 20)
+                };
+            }
+            else
+            {
+                ImageViewBorder.Background = _checkeredImageBrush;
+            }
         }
     }
 }

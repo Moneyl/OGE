@@ -15,7 +15,17 @@
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
 
-        <ListBox Name="TextureList" Grid.Column="0" Width="220"/>
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <WrapPanel Grid.Row="0" Margin="5 5 0 5">
+                <CheckBox Content="Solid background" Name="BackgroundCheckbox" Click="BackgroundCheckbox_OnClick"/>
+            </WrapPanel>
+            <ListBox Name="TextureList" Grid.Row="1" Width="220"/>
+        </Grid>
 
         <ScrollViewer Grid.Column="1" VerticalScrollBarVisibility="Auto">
             <Border Name="ImageViewBorder">

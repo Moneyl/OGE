@@ -10,10 +10,6 @@ using RfgTools.Formats.Textures;
 
 namespace OGE.ViewModels.TextureViewer
 {
-    //Todo: Add checkbox above entries list to change background between checkerboard and dark
-    //Todo: Update properties panel with valid info about sub-textures like original editor had
-    //Todo: Test that this UI properly updates when files are imported/exported
-    //Todo: Consider moving sub-texture list into an anchorable panel
     public class TextureViewerViewModel : ReactiveObject
     {
         private PegFile _peg;
