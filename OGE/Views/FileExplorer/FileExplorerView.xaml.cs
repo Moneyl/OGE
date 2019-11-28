@@ -2,10 +2,10 @@
 using System.Windows.Controls;
 using System.Windows.Input;
 using OGE.Events;
-using OGE.ViewModels;
+using OGE.ViewModels.FileExplorer;
 using ReactiveUI;
 
-namespace OGE.Views
+namespace OGE.Views.FileExplorer
 {
     public partial class FileExplorerView : ReactiveUserControl<FileExplorerViewModel>
     {
@@ -28,7 +28,8 @@ namespace OGE.Views
         public void OnItemMouseDoubleClick(object sender, MouseButtonEventArgs args)
         {
             var item = sender as TreeViewItem;
-            if(item == null)
+            //Prevent event from being recursively triggered on parents
+            if (item == null || !item.IsSelected) 
                 return;
 
             MessageBus.Current.SendMessage(new OpenFileEventArgs(item.Header as FileExplorerItemViewModel));

@@ -5,10 +5,12 @@ using System.Linq;
 using OGE.Helpers;
 using OGE.Utility;
 using OGE.ViewModels;
+using OGE.ViewModels.FileExplorer;
 using RfgTools.Formats.Packfiles;
 
 namespace OGE.Editor
 {
+    //Note: This class is a horrid mess and you shouldn't read it until I rewrite it
     //Todo: Keep undo/redo stack and track changes
     //Todo: Generate modinfo.xml from changes
     public static class ProjectManager
@@ -48,29 +50,36 @@ namespace OGE.Editor
 
         public static bool TryGetFile(FileExplorerItemViewModel target, out Stream stream, bool extractIfNotCached = false)
         {
+            bool result = TryGetFile(target.FilePath, out Stream outStream, target.Parent, extractIfNotCached);
+            stream = outStream;
+            return result;
+        }
+
+        public static bool TryGetFile(string targetFilePath, out Stream stream, FileExplorerItemViewModel targetParent = null, bool extractIfNotCached = false)
+        {
             stream = Stream.Null;
-            if (target.Parent == null)
+            if (targetParent == null)
                 return false;
 
-            var parent = target.Parent;
-            string parentFileName = Path.GetFileName(parent.FilePath);
-            string parentFilePath = parent.FilePath;
-            string filename = Path.GetFileName(target.FilePath);
+            string parentFileName = Path.GetFileName(targetParent.FilePath);
+            string parentFilePath = targetParent.FilePath;
+            string filename = Path.GetFileName(targetFilePath);
 
             //If parent isn't top level packfile, must first extract it from it's parent.
-            if (!parent.IsTopLevelPackfile)
+            if (!targetParent.IsTopLevelPackfile)
             {
-                if (parent.Parent == null)
+                if (targetParent.Parent == null)
                     return false;
 
-                string topParentFilePath = parent.Parent.FilePath;
-                string topParentFileName = Path.GetFileName(parent.Parent.FilePath);
+                string topParentFilePath = targetParent.Parent.FilePath;
+                string topParentFileName = Path.GetFileName(targetParent.Parent.FilePath);
                 string parentKey = $"{topParentFileName}--{parentFileName}";
+                string parentFolderPathOverride = $"{GlobalCachePath}{parentKey}\\";
 
                 //If file is cached, just return it.
-                if (IsFileCached(filename, parentKey))
+                if (IsFileCached(filename, parentKey, parentFolderPathOverride))
                 {
-                    stream = GetCachedFileStream(filename, parentKey);
+                    stream = GetCachedFileStream(filename, parentKey, parentFolderPathOverride);
                     return stream != Stream.Null;
                 }
 
@@ -81,10 +90,10 @@ namespace OGE.Editor
                 }
 
                 //Try to extract target file from parent
-                if (!ExtractFileIfNotCached(filename, $"{topParentFilePath}\\{parentFileName}", false, true, topParentFilePath))
+                if (!ExtractFileIfNotCached(filename, parentFilePath, false, true, topParentFilePath))
                     return false;
 
-                stream = GetCachedFileStream(filename, parentKey, $"{GlobalCachePath}{parentKey}\\");
+                stream = GetCachedFileStream(filename, parentKey, parentFolderPathOverride);
                 return stream != Stream.Null;
             }
 
@@ -105,33 +114,37 @@ namespace OGE.Editor
         public static bool ExtractFileIfNotCached(string targetFileName, string parentFilePath, bool targetIsPackfile = false, bool parentIsEmbeddedPackfile = false, string topLevelParentPath = null)
         {
             string parentFileName = Path.GetFileName(parentFilePath);
-            if (!IsFileCached(targetFileName, parentFileName))
-                ExtractAndCacheFile(parentFilePath, targetFileName, targetIsPackfile, parentIsEmbeddedPackfile, topLevelParentPath);
-
+            string parentKey;
+            string parentFolderPathOverride = null;
             if (parentIsEmbeddedPackfile)
             {
                 if (topLevelParentPath == null)
                     return false;
 
                 string topLevelParentName = Path.GetFileName(topLevelParentPath);
-                string parentKey = $"{topLevelParentName}--{parentFileName}";
-                return IsFileCached(targetFileName, parentKey, $"{GlobalCachePath}{parentKey}\\");
+                parentKey = $"{topLevelParentName}--{parentFileName}";
+                parentFolderPathOverride = $"{GlobalCachePath}{parentKey}\\";
             }
             else
-            { 
-                return IsFileCached(targetFileName, parentFileName);
+            {
+                parentKey = parentFileName;
             }
+
+            if (!IsFileCached(targetFileName, parentKey)) //Todo: Should parentFileName be parent key here?
+                ExtractAndCacheFile(parentFilePath, targetFileName, targetIsPackfile, parentIsEmbeddedPackfile, topLevelParentPath);
+
+            return IsFileCached(targetFileName, parentKey, parentFolderPathOverride);
         }
 
-        public static bool IsFileCached(string filename, string parentFileName, string parentFolderPathOverride = null)
+        public static bool IsFileCached(string filename, string parentKey, string parentFolderPathOverride = null)
         {
-            if (Files.TryGetValue(parentFileName, out List<FileRef> files))
+            if (Files.TryGetValue(parentKey, out List<FileRef> files))
             {
                 foreach (var subFile in files)
                 {
                     if (subFile.Filename != filename)
                         continue;
-                    if (!subFile.TryOpenOrGet(out Stream fileStream, parentFolderPathOverride))
+                    if (!subFile.FileExists(parentFolderPathOverride))
                         break;
 
                     return true;
@@ -140,9 +153,9 @@ namespace OGE.Editor
             return false;
         }
 
-        private static Stream GetCachedFileStream(string filename, string parentFilePath, string parentFolderPathOverride = null)
+        private static Stream GetCachedFileStream(string filename, string parentKey, string parentFolderPathOverride = null)
         {
-            if (Files.TryGetValue(parentFilePath, out List<FileRef> files))
+            if (Files.TryGetValue(parentKey, out List<FileRef> files))
             {
                 foreach (var subFile in files)
                 {
@@ -198,7 +211,7 @@ namespace OGE.Editor
                 packfile = _workingDirectoryPackfiles.First(item => item.Filename == parentFileName);
 
 
-            if (packfile.CanExtractSingleFile() && packfile.TryExtractSingleFile(filename, outputPath))
+            if (packfile.TryExtractSingleFile(filename, outputPath))
             {
                 fileRefs.Add(new FileRef(filename, parentFileName));
             }

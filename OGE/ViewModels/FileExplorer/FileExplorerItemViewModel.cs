@@ -1,14 +1,11 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections;
 using System.IO;
-using System.Runtime.InteropServices.ComTypes;
-using System.Threading.Tasks;
-using System.Windows.Forms.Design;
 using OGE.Editor;
 using OGE.Helpers;
 using ReactiveUI;
 using RfgTools.Formats.Packfiles;
 
-namespace OGE.ViewModels
+namespace OGE.ViewModels.FileExplorer
 {
     public class FileExplorerItemViewModel : TreeItem
     {
@@ -24,6 +21,7 @@ namespace OGE.ViewModels
 
         public FileExplorerItemViewModel Parent { get; private set; }
 
+        //Todo: Make sure the path is actually passed to this, or just rename to Filename and have separate path variable. Current name is misleading
         public string FilePath
         {
             get => _filePath;
@@ -60,7 +58,6 @@ namespace OGE.ViewModels
         }
 
         public bool IsTopLevelPackfile { get; set; } = false;
-
         public override object ViewModel => this;
 
         public FileExplorerItemViewModel(string filePath, FileExplorerItemViewModel parent, Packfile packfile = null)
@@ -72,7 +69,7 @@ namespace OGE.ViewModels
 
         public void FillChildrenList()
         {
-            //Try to handle packfiles that are inside other packfiles
+            //Handle internal packfiles
             if (_packfile == null && Parent != null)
             {
                 //Ignore non packfiles
@@ -80,12 +77,18 @@ namespace OGE.ViewModels
                     return;
 
                 //Try to see if it's in the cache
-                if (ProjectManager.IsFileCached(FilePath, Parent.FilePath))
+                if (ProjectManager.IsFileCached(FilePath, Path.GetFileName(Parent.FilePath)))
                 {
-                    //Todo: Add func to ProjectManager that gets path to cached file
-                    string packfilePath = $"{ProjectManager.GlobalCachePath}{Packfile.Filename}\\{Parent.FilePath}";
+                    string packfilePath = $"{ProjectManager.GlobalCachePath}{Path.GetFileName(Parent.FilePath)}\\{FilePath}";
                     _packfile = new Packfile(false);
                     _packfile.ReadMetadata(packfilePath);
+
+                    for (var i = 0; i < _packfile.DirectoryEntries.Count; i++)
+                    {
+                        var subfile = _packfile.DirectoryEntries[i];
+                        var explorerItem = new FileExplorerItemViewModel(subfile.FileName, this);
+                        AddChild(explorerItem);
+                    }
                 }
                 else //If not in cache, get subfiles list from asm_pc files in parent.
                 {
@@ -94,30 +97,30 @@ namespace OGE.ViewModels
 
                     //Containers don't have extension in asm_pc files, so strip extension for comparisons
                     string filenameNoExtension = Path.GetFileNameWithoutExtension(FilePath);
-                    foreach (var asmFile in Parent.Packfile.AsmFiles)
+                    for (var i = 0; i < Parent.Packfile.AsmFiles.Count; i++)
                     {
-                        foreach (var container in asmFile.Containers)
+                        var asmFile = Parent.Packfile.AsmFiles[i];
+                        for (var j = 0; j < asmFile.Containers.Count; j++)
                         {
+                            var container = asmFile.Containers[j];
                             if (container.Name != filenameNoExtension)
                                 continue;
 
-                            foreach (var primitive in container.Primitives)
+                            for (var k = 0; k < container.Primitives.Count; k++)
                             {
+                                var primitive = container.Primitives[k];
                                 var explorerItem = new FileExplorerItemViewModel(primitive.Name, this);
-                                //explorerItem.FillChildrenList();
                                 AddChild(explorerItem);
                             }
                         }
                     }
                 }
             }
-            else
+            else if(_packfile != null)//Handle top level packfiles
             {
-                if (_packfile?.Filenames == null)
-                    return;
-
-                foreach (var filename in _packfile.Filenames)
+                for (var i = 0; i < _packfile.Filenames.Count; i++)
                 {
+                    var filename = _packfile.Filenames[i];
                     var explorerItem = new FileExplorerItemViewModel(filename, this);
                     explorerItem.FillChildrenList();
                     AddChild(explorerItem);

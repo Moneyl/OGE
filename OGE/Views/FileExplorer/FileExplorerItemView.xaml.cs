@@ -1,10 +1,8 @@
 ﻿using System.Reactive.Disposables;
-using System.Windows.Input;
-using OGE.Events;
-using OGE.ViewModels;
+using OGE.ViewModels.FileExplorer;
 using ReactiveUI;
 
-namespace OGE.Views
+namespace OGE.Views.FileExplorer
 {
     public partial class FileExplorerItemView : ReactiveUserControl<FileExplorerItemViewModel>
     {

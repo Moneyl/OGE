@@ -8,6 +8,7 @@
         xmlns:avalonDockLayout="clr-namespace:Xceed.Wpf.AvalonDock.Layout;assembly=Xceed.Wpf.AvalonDock"
         xmlns:views="clr-namespace:OGE.Views"
         xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
+        xmlns:fileExplorer="clr-namespace:OGE.Views.FileExplorer"
         mc:Ignorable="d"
         Title="OGE" Height="800" Width="1280"
         TitleBarHeight="30">
@@ -32,11 +33,6 @@
             <Menu Margin="5 5 0 0">
                 <MenuItem Header="File">
                     <MenuItem Header="Open folder" Name="MenuOpenFolderButton"/>
-                    <MenuItem Header="Save" Name="MenuSaveButton"/>
-                    <MenuItem Header="Save as" Name="MenuSaveAsButton"/>
-                    <Separator/>
-                    <MenuItem Header="Import from xml" Name="MenuImportFromXmlButton"/>
-                    <MenuItem Header="Export to xml" Name="MenuExportToXmlButton"/>
                     <Separator/>
                     <MenuItem Header="Exit" Click="MenuExit_OnClick"/>
                 </MenuItem>
@@ -66,7 +62,7 @@
                         <avalonDock:LayoutAnchorable x:Name="documentsAnchorable" ContentId="Documents" 
                                                      Title="File Explorer" ToolTip="Explore files and subfiles in the working directory."
                                                      CanHide="False" CanClose="False">
-                            <views:FileExplorerView x:Name="fileExplorerView"/>
+                            <fileExplorer:FileExplorerView x:Name="fileExplorerView"/>
                         </avalonDock:LayoutAnchorable>
                     </avalonDock:LayoutAnchorablePane>
 

@@ -14,10 +14,15 @@ namespace OGE.Utility
 
         public static void Log(string message)
         {
-            LogPanel?.Children.Add(new TextBlock
+            //Done this way because an issue with threading.
+            //See here for an explanation: https://stackoverflow.com/questions/9732709/the-calling-thread-cannot-access-this-object-because-a-different-thread-owns-it
+            LogPanel?.Dispatcher?.Invoke(() =>
             {
-                Text = message,
-                Margin = new Thickness(5, 0, 0, 0)
+                LogPanel.Children.Add(new TextBlock
+                {
+                    Text = message,
+                    Margin = new Thickness(5, 0, 0, 0)
+                });
             });
         }
     }

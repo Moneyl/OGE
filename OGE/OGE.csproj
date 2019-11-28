@@ -4,9 +4,12 @@
     <OutputType>WinExe</OutputType>
     <TargetFramework>netcoreapp3.0</TargetFramework>
     <UseWPF>true</UseWPF>
+    <Platforms>x86</Platforms>
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Resources\Checker.png" />
+    <None Remove="Resources\Solid.png" />
     <None Remove="Themes\Highlighting\Lua-Mode.xshd" />
     <None Remove="Themes\Highlighting\XML-Mode.xshd" />
   </ItemGroup>
@@ -35,6 +38,15 @@
 
   <ItemGroup>
     <Folder Include="Editor\Managers\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="Resources\Checker.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Resources\Solid.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Resource>
   </ItemGroup>
 
 </Project>

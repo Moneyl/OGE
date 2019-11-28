@@ -1,17 +1,13 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
-using System.Reactive;
 using System.Reactive.Linq;
-using System.Threading.Tasks;
-using System.Windows.Controls;
-using System.Windows.Input;
 using OGE.Editor;
 using OGE.Events;
 using ReactiveUI;
-using OGE.Helpers;
 
-namespace OGE.ViewModels
+namespace OGE.ViewModels.FileExplorer
 {
     public class FileExplorerViewModel : ReactiveObject
     {
@@ -57,8 +53,10 @@ namespace OGE.ViewModels
         public void FillFilesList()
         {
             FileList.Clear();
-            foreach (var packfile in ProjectManager.WorkingDirectoryPackfiles)
+            //Assuming that any packfile in this list is already confirmed to be a packfile by ProjectManager
+            for (var i = 0; i < ProjectManager.WorkingDirectoryPackfiles.Count; i++)
             {
+                var packfile = ProjectManager.WorkingDirectoryPackfiles[i];
                 var explorerItem = new FileExplorerItemViewModel(packfile.PackfilePath, null, packfile)
                 {
                     IsTopLevelPackfile = true
