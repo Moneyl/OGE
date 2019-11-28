@@ -54,7 +54,8 @@ namespace OGE
             });
 
             MessageBus.Current.Listen<OpenFileEventArgs>()
-                .Where(args => args.TargetItem != null && args.TargetItem.Parent != null)
+                .Throttle(TimeSpan.FromMilliseconds(100))
+                .Where(args => args.TargetItem?.Parent != null)
                 .Subscribe(HandleOpenFileEvent);
         }
 

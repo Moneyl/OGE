@@ -28,7 +28,8 @@ namespace OGE.Views.FileExplorer
         public void OnItemMouseDoubleClick(object sender, MouseButtonEventArgs args)
         {
             var item = sender as TreeViewItem;
-            if(item == null)
+            //Prevent event from being recursively triggered on parents
+            if (item == null || !item.IsSelected) 
                 return;
 
             MessageBus.Current.SendMessage(new OpenFileEventArgs(item.Header as FileExplorerItemViewModel));
