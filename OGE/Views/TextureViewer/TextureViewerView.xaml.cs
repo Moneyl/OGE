@@ -10,8 +10,6 @@ namespace OGE.Views.TextureViewer
 {
     public partial class TextureViewerView : ReactiveUserControl<TextureViewerViewModel>
     {
-        private PegFile Peg => ViewModel.Peg;
-
         public TextureViewerView()
         {
 
@@ -21,7 +19,7 @@ namespace OGE.Views.TextureViewer
         {
             InitializeComponent();
             ViewModel = new TextureViewerViewModel(peg);
-
+            
             this.WhenActivated(disposable =>
             {
                 this.OneWayBind(ViewModel,
@@ -38,6 +36,9 @@ namespace OGE.Views.TextureViewer
                         vm => vm.SelectedItem,
                         v => v.TextureList.SelectedItem)
                     .DisposeWith(disposable);
+
+                //Set first entry as selected item
+                ViewModel.SelectedItem = TextureList.Items[0] as TextureEntryViewModel;
             });
         }
     }
