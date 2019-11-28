@@ -20,6 +20,7 @@ using ReactiveUI;
 using RfgTools.Formats.Textures;
 using Xceed.Wpf.AvalonDock.Layout;
 using HighlightingLoader = ICSharpCode.AvalonEdit.Highlighting.Xshd.HighlightingLoader;
+using TextureViewerView = OGE.Views.TextureViewer.TextureViewerView;
 
 namespace OGE
 {

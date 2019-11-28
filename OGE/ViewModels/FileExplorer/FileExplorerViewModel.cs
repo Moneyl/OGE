@@ -1,17 +1,12 @@
 ﻿using System;
 using System.Collections.ObjectModel;
 using System.IO;
-using System.Reactive;
 using System.Reactive.Linq;
-using System.Threading.Tasks;
-using System.Windows.Controls;
-using System.Windows.Input;
 using OGE.Editor;
 using OGE.Events;
 using ReactiveUI;
-using OGE.Helpers;
 
-namespace OGE.ViewModels
+namespace OGE.ViewModels.FileExplorer
 {
     public class FileExplorerViewModel : ReactiveObject
     {

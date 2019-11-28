@@ -1,10 +1,11 @@
 ﻿//Source: https://github.com/condron/ReactiveUI-TreeView
+
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using ReactiveUI;
 
-namespace OGE.ViewModels
+namespace OGE.ViewModels.FileExplorer
 {
     public abstract class TreeItem : ReactiveObject
     {

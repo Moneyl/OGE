@@ -8,6 +8,7 @@
         xmlns:avalonDockLayout="clr-namespace:Xceed.Wpf.AvalonDock.Layout;assembly=Xceed.Wpf.AvalonDock"
         xmlns:views="clr-namespace:OGE.Views"
         xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
+        xmlns:fileExplorer="clr-namespace:OGE.Views.FileExplorer"
         mc:Ignorable="d"
         Title="OGE" Height="800" Width="1280"
         TitleBarHeight="30">
@@ -66,7 +67,7 @@
                         <avalonDock:LayoutAnchorable x:Name="documentsAnchorable" ContentId="Documents" 
                                                      Title="File Explorer" ToolTip="Explore files and subfiles in the working directory."
                                                      CanHide="False" CanClose="False">
-                            <views:FileExplorerView x:Name="fileExplorerView"/>
+                            <fileExplorer:FileExplorerView x:Name="fileExplorerView"/>
                         </avalonDock:LayoutAnchorable>
                     </avalonDock:LayoutAnchorablePane>
 

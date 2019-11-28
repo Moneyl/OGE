@@ -1,14 +1,10 @@
-﻿using System.Collections.Generic;
-using System.IO;
-using System.Runtime.InteropServices.ComTypes;
-using System.Threading.Tasks;
-using System.Windows.Forms.Design;
+﻿using System.IO;
 using OGE.Editor;
 using OGE.Helpers;
 using ReactiveUI;
 using RfgTools.Formats.Packfiles;
 
-namespace OGE.ViewModels
+namespace OGE.ViewModels.FileExplorer
 {
     public class FileExplorerItemViewModel : TreeItem
     {

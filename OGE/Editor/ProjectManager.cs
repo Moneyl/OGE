@@ -5,6 +5,7 @@ using System.Linq;
 using OGE.Helpers;
 using OGE.Utility;
 using OGE.ViewModels;
+using OGE.ViewModels.FileExplorer;
 using RfgTools.Formats.Packfiles;
 
 namespace OGE.Editor

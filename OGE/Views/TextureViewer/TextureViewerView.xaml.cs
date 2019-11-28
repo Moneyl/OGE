@@ -1,11 +1,13 @@
-﻿using System.Windows;
-using System.Windows.Controls;
+﻿using System.Collections;
+using System.Collections.Generic;
+using System.Reactive.Disposables;
+using System.Windows;
 using OGE.Utility;
-using OGE.ViewModels;
+using OGE.ViewModels.TextureViewer;
 using ReactiveUI;
 using RfgTools.Formats.Textures;
 
-namespace OGE.Views
+namespace OGE.Views.TextureViewer
 {
     public partial class TextureViewerView : ReactiveUserControl<TextureViewerViewModel>
     {
@@ -21,7 +23,10 @@ namespace OGE.Views
 
             this.WhenActivated(disposable =>
             {
-
+                this.OneWayBind(ViewModel,
+                        vm => vm.TextureEntries,
+                        v => v.TextureList.ItemsSource)
+                    .DisposeWith(disposable);
             });
         }
 
@@ -45,7 +50,7 @@ namespace OGE.Views
 
         int GetSelectedTextureIndex()
         {
-            return TextureTree.Items.IndexOf(TextureTree.SelectedItem);
+            return TextureList.Items.IndexOf(TextureList.SelectedItem);
         }
     }
 }

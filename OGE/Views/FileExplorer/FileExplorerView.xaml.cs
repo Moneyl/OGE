@@ -2,10 +2,10 @@
 using System.Windows.Controls;
 using System.Windows.Input;
 using OGE.Events;
-using OGE.ViewModels;
+using OGE.ViewModels.FileExplorer;
 using ReactiveUI;
 
-namespace OGE.Views
+namespace OGE.Views.FileExplorer
 {
     public partial class FileExplorerView : ReactiveUserControl<FileExplorerViewModel>
     {
