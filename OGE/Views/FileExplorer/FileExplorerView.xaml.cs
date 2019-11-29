@@ -1,5 +1,7 @@
-﻿using System.Reactive.Disposables;
+﻿using System.Diagnostics;
+using System.Reactive.Disposables;
 using System.Windows.Controls;
+using System.Windows.Forms;
 using System.Windows.Input;
 using OGE.Events;
 using OGE.ViewModels.FileExplorer;
@@ -9,6 +11,9 @@ namespace OGE.Views.FileExplorer
 {
     public partial class FileExplorerView : ReactiveUserControl<FileExplorerViewModel>
     {
+        private Stopwatch _searchChangedTimer = new Stopwatch();
+        private long _minSearchUpdateTimer = 500; //Time in ms since the last file explorer list update
+
         public FileExplorerView()
         {
             InitializeComponent();
@@ -21,6 +26,11 @@ namespace OGE.Views.FileExplorer
                 this.Bind(ViewModel,
                         vm => vm.SelectedItem,
                         v => v.FileTree.SelectedItem)
+                    .DisposeWith(disposable);
+
+                this.Bind(ViewModel,
+                        vm => vm.SearchTerm,
+                        v => v.SearchBox.Text)
                     .DisposeWith(disposable);
             });
         }

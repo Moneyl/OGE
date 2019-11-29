@@ -5,14 +5,25 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-             xmlns:local="clr-namespace:OGE.Views"
-             xmlns:viewModels="clr-namespace:OGE.ViewModels"
+             xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
              xmlns:reactiveUi="http://reactiveui.net"
              xmlns:fileExplorer="clr-namespace:OGE.ViewModels.FileExplorer"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800">
     <Grid>
-        <TreeView Name="FileTree"
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <TextBox Name="SearchBox" Grid.Row="0"
+                 mah:TextBoxHelper.Watermark="Search file explorer (File name, or *.extension)"
+                 mah:TextBoxHelper.WatermarkAlignment="Left"
+                 mah:TextBoxHelper.ClearTextButton="True"
+                 BorderBrush="{DynamicResource MahApps.Brushes.Accent}"
+                 Background="{DynamicResource MahApps.Brushes.Accent1}"/>
+
+        <TreeView Name="FileTree" Grid.Row="1"
                   VirtualizingStackPanel.IsVirtualizing="True"
                   VirtualizingStackPanel.VirtualizationMode="Standard">
             <TreeView.Resources>

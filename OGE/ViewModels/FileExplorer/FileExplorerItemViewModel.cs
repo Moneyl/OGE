@@ -67,7 +67,7 @@ namespace OGE.ViewModels.FileExplorer
             Parent = parent;
         }
 
-        public void FillChildrenList()
+        public void FillChildrenList(string searchTerm)
         {
             //Handle internal packfiles
             if (_packfile == null && Parent != null)
@@ -86,6 +86,9 @@ namespace OGE.ViewModels.FileExplorer
                     for (var i = 0; i < _packfile.DirectoryEntries.Count; i++)
                     {
                         var subfile = _packfile.DirectoryEntries[i];
+                        if(!subfile.FileName.Contains(searchTerm))
+                            continue;
+
                         var explorerItem = new FileExplorerItemViewModel(subfile.FileName, this);
                         AddChild(explorerItem);
                     }
@@ -109,6 +112,9 @@ namespace OGE.ViewModels.FileExplorer
                             for (var k = 0; k < container.Primitives.Count; k++)
                             {
                                 var primitive = container.Primitives[k];
+                                if (!primitive.Name.Contains(searchTerm))
+                                    continue;
+
                                 var explorerItem = new FileExplorerItemViewModel(primitive.Name, this);
                                 AddChild(explorerItem);
                             }
@@ -121,8 +127,14 @@ namespace OGE.ViewModels.FileExplorer
                 for (var i = 0; i < _packfile.Filenames.Count; i++)
                 {
                     var filename = _packfile.Filenames[i];
+
+                    //Don't show non packfiles that don't fit the search term
+                    if (!PathHelpers.IsPackfilePath(filename))
+                        if(!filename.Contains(searchTerm))
+                            continue;
+
                     var explorerItem = new FileExplorerItemViewModel(filename, this);
-                    explorerItem.FillChildrenList();
+                    explorerItem.FillChildrenList(searchTerm);
                     AddChild(explorerItem);
                 }
             }
