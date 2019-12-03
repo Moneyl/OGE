@@ -80,9 +80,8 @@ namespace OGE.ViewModels.FileExplorer
             FileList.Clear();
             
             //Assuming that any packfile in this list is already confirmed to be a packfile by ProjectManager
-            for (var i = 0; i < ProjectManager.WorkingDirectoryPackfiles.Count; i++)
+            foreach (var packfile in ProjectManager.WorkingDirectoryPackfiles)
             {
-                var packfile = ProjectManager.WorkingDirectoryPackfiles[i];
                 var explorerItem = new FileExplorerItemViewModel(packfile.PackfilePath, null, packfile, true);
 
                 explorerItem.FillChildrenList(SearchTerm);

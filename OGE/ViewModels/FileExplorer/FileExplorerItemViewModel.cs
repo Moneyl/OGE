@@ -89,9 +89,8 @@ namespace OGE.ViewModels.FileExplorer
                     Packfile = new Packfile(false);
                     Packfile.ReadMetadata(packfilePath);
 
-                    for (var i = 0; i < Packfile.DirectoryEntries.Count; i++)
+                    foreach (var subfile in Packfile.DirectoryEntries)
                     {
-                        var subfile = Packfile.DirectoryEntries[i];
                         if(!subfile.FileName.Contains(searchTerm))
                             continue;
 
@@ -106,18 +105,15 @@ namespace OGE.ViewModels.FileExplorer
 
                     //Containers don't have extension in asm_pc files, so strip extension for comparisons
                     string filenameNoExtension = Path.GetFileNameWithoutExtension(FilePath);
-                    for (var i = 0; i < Parent.Packfile.AsmFiles.Count; i++) //Todo: Benchmark speed dif here between for and foreach again. Likely negligable
+                    foreach (var asmFile in Parent.Packfile.AsmFiles)
                     {
-                        var asmFile = Parent.Packfile.AsmFiles[i];
-                        for (var j = 0; j < asmFile.Containers.Count; j++)
+                        foreach (var container in asmFile.Containers)
                         {
-                            var container = asmFile.Containers[j];
                             if (container.Name != filenameNoExtension)
                                 continue;
 
-                            for (var k = 0; k < container.Primitives.Count; k++)
+                            foreach (var primitive in container.Primitives)
                             {
-                                var primitive = container.Primitives[k];
                                 if (!primitive.Name.Contains(searchTerm))
                                     continue;
 
@@ -130,10 +126,8 @@ namespace OGE.ViewModels.FileExplorer
             }
             else //Handle top level packfiles
             {
-                for (var i = 0; i < Packfile.Filenames.Count; i++)
+                foreach (var filename in Packfile.Filenames)
                 {
-                    var filename = Packfile.Filenames[i];
-
                     //Don't show non packfiles that don't fit the search term
                     if (!PathHelpers.IsPackfilePath(filename))
                         if(!filename.Contains(searchTerm))
