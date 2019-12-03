@@ -13,7 +13,7 @@ namespace OGE.Views.FileExplorer
             this.WhenActivated(disposable =>
             {
                 this.OneWayBind(ViewModel,
-                        vm => vm.ShortName,
+                        vm => vm.Filename,
                         v => v.ItemName.Text)
                     .DisposeWith(disposable);
             });

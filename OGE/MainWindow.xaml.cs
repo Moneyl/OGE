@@ -15,6 +15,7 @@ using OGE.Events;
 using OGE.Helpers;
 using OGE.Utility;
 using OGE.ViewModels;
+using OGE.ViewModels.FileExplorer;
 using OGE.Views;
 using ReactiveUI;
 using RfgTools.Formats.Textures;
@@ -77,7 +78,7 @@ namespace OGE
 
                 if (PathHelpers.IsTextExtension(targetItem.FileExtension))
                 {
-                    if (!ProjectManager.TryGetFile(targetItem, out Stream docStream, true))
+                    if (!ProjectManager.TryGetFile(targetItem.Filename, targetItem.Parent, out Stream docStream, true))
                         return;
 
                     string docString;
@@ -89,7 +90,7 @@ namespace OGE
                     var definition = HighlightingManager.GetDefinitionByExtension(targetItem.FileExtension);
                     var document = new LayoutDocument
                     {
-                        Title = args.TargetItem.ShortName,
+                        Title = args.TargetItem.Filename,
                         Content = new TextEditor
                         {
                             Document = new TextDocument(docString),
@@ -105,16 +106,17 @@ namespace OGE
                 }
                 else if (PathHelpers.IsTextureHeaderExtension(targetItem.FileExtension)) //Todo: Support opening via gpu files 
                 {
-                    //Get gpu file name
+                    if (targetItem.Parent == null)
+                        return;
+
+                    //Get gpu filename
                     if (!PathHelpers.TryGetGpuFileNameFromCpuFile(targetItem.FilePath, out string gpuFileName))
                         return;
-
                     //Get cpu file stream from cache
-                    if (!ProjectManager.TryGetFile(targetItem.FilePath, out Stream cpuFileStream, targetItem.Parent, true))
+                    if (!ProjectManager.TryGetFile(targetItem.Filename, targetItem.Parent, out Stream cpuFileStream, true))
                         return;
-
                     //Get gpu file stream from cache
-                    if (!ProjectManager.TryGetFile(gpuFileName, out Stream gpuFileStream, targetItem.Parent, true))
+                    if(!ProjectManager.TryGetFile(gpuFileName, targetItem.Parent, out Stream gpuFileStream, true))
                         return;
 
                     var pegFile = new PegFile();
@@ -132,7 +134,7 @@ namespace OGE
 
                     var document = new LayoutDocument
                     {
-                        Title = args.TargetItem.ShortName,
+                        Title = args.TargetItem.Filename,
                         Content = new TextureViewerView(pegFile)
                     };
                     DocumentPane.Children.Add(document);

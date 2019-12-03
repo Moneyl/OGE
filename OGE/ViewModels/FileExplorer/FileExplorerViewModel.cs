@@ -85,15 +85,11 @@ namespace OGE.ViewModels.FileExplorer
             for (var i = 0; i < ProjectManager.WorkingDirectoryPackfiles.Count; i++)
             {
                 var packfile = ProjectManager.WorkingDirectoryPackfiles[i];
-                var explorerItem = new FileExplorerItemViewModel(packfile.PackfilePath, null, packfile)
-                {
-                    IsTopLevelPackfile = true
-                };
+                var explorerItem = new FileExplorerItemViewModel(packfile.PackfilePath, null, packfile, true);
 
                 explorerItem.FillChildrenList(SearchTerm);
                 FileList.Add(explorerItem);
             }
-            
         }
 
         private void TriggerSelectedItemChangedEvent()

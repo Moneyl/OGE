@@ -111,7 +111,7 @@ namespace OGE.Views
                 Inlines =
                 {
                     new Run {Text = "Name: ", FontWeight = FontWeights.Bold},
-                    new Run {Text = selectedItem.ShortName},
+                    new Run {Text = selectedItem.Filename},
                     new LineBreak()
                 },
                 TextWrapping = TextWrapping.Wrap

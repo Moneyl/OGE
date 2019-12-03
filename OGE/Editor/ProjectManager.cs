@@ -4,7 +4,6 @@ using System.IO;
 using System.Linq;
 using OGE.Helpers;
 using OGE.Utility;
-using OGE.ViewModels;
 using OGE.ViewModels.FileExplorer;
 using RfgTools.Formats.Packfiles;
 
@@ -16,12 +15,14 @@ namespace OGE.Editor
     public static class ProjectManager
     {
         private static string _workingDirectory;
-        private static Dictionary<string, List<FileRef>> _files = new Dictionary<string, List<FileRef>>();
-        private static List<Packfile> _workingDirectoryPackfiles = new List<Packfile>();
+        private static Dictionary<string, List<CacheFile>> _files = new Dictionary<string, List<CacheFile>>();
+        private static List<Packfile> _workingDirectoryPackfiles = new List<Packfile>(); //Depth 0 packfiles
+        //Key is the parent file name, value is the packfile info. These are depth > 0 packfiles
         private static Dictionary<string, Packfile> _embeddedPackfiles = new Dictionary<string, Packfile>();
 
         //Todo: Maybe have subfolders for different working directories in EditorCache
-        public static string GlobalCachePath { get; private set; } = @".\EditorCache\";
+        public static string GlobalCachePath { get; } = @".\EditorCache\";
+        public static IReadOnlyList<Packfile> WorkingDirectoryPackfiles => _workingDirectoryPackfiles;
 
         public static string WorkingDirectory
         {
@@ -33,11 +34,6 @@ namespace OGE.Editor
             }
         }
 
-        public static Dictionary<string, List<FileRef>> Files => _files;
-        public static IReadOnlyList<Packfile> WorkingDirectoryPackfiles => _workingDirectoryPackfiles;
-        //Key is the parent file name, value is the packfile info.
-        public static IReadOnlyDictionary<string, Packfile> EmbeddedPackfiles => _embeddedPackfiles;
-
         static ProjectManager()
         {
             ScanEditorCache();
@@ -48,197 +44,6 @@ namespace OGE.Editor
             Directory.CreateDirectory(GlobalCachePath);
         }
 
-        public static bool TryGetFile(FileExplorerItemViewModel target, out Stream stream, bool extractIfNotCached = false)
-        {
-            bool result = TryGetFile(target.FilePath, out Stream outStream, target.Parent, extractIfNotCached);
-            stream = outStream;
-            return result;
-        }
-
-        public static bool TryGetFile(string targetFilePath, out Stream stream, FileExplorerItemViewModel targetParent = null, bool extractIfNotCached = false)
-        {
-            stream = Stream.Null;
-            if (targetParent == null)
-                return false;
-
-            string parentFileName = Path.GetFileName(targetParent.FilePath);
-            string parentFilePath = targetParent.FilePath;
-            string filename = Path.GetFileName(targetFilePath);
-
-            //If parent isn't top level packfile, must first extract it from it's parent.
-            if (!targetParent.IsTopLevelPackfile)
-            {
-                if (targetParent.Parent == null)
-                    return false;
-
-                string topParentFilePath = targetParent.Parent.FilePath;
-                string topParentFileName = Path.GetFileName(targetParent.Parent.FilePath);
-                string parentKey = $"{topParentFileName}--{parentFileName}";
-                string parentFolderPathOverride = $"{GlobalCachePath}{parentKey}\\";
-
-                //If file is cached, just return it.
-                if (IsFileCached(filename, parentKey, parentFolderPathOverride))
-                {
-                    stream = GetCachedFileStream(filename, parentKey, parentFolderPathOverride);
-                    return stream != Stream.Null;
-                }
-
-                //Ensure parent is extracted. Extract parent from top level parent - parent is level 1 file in this case
-                if (!IsFileCached(parentFileName, topParentFileName))
-                {
-                    ExtractAndCacheFile(topParentFileName, parentFileName, true, false);
-                }
-
-                //Try to extract target file from parent
-                if (!ExtractFileIfNotCached(filename, parentFilePath, false, true, topParentFilePath))
-                    return false;
-
-                stream = GetCachedFileStream(filename, parentKey, parentFolderPathOverride);
-                return stream != Stream.Null;
-            }
-
-            //Extract file from parent - target is a level 1 file in this case
-            if (ExtractFileIfNotCached(filename, parentFilePath))
-                stream = GetCachedFileStream(filename, parentFileName);
-
-            return stream != Stream.Null;
-        }
-
-        /// <summary>
-        /// Extracts a one level deep file from it's parent.
-        /// Does not work for files that are more than one level deep!
-        /// </summary>
-        /// <param name="targetFileName">The name of the target file to be extracted.</param>
-        /// <param name="parentFilePath">The path to the parent file.</param>
-        /// <returns>Returns a bool that is true if it was successful and false otherwise.</returns>
-        public static bool ExtractFileIfNotCached(string targetFileName, string parentFilePath, bool targetIsPackfile = false, bool parentIsEmbeddedPackfile = false, string topLevelParentPath = null)
-        {
-            string parentFileName = Path.GetFileName(parentFilePath);
-            string parentKey;
-            string parentFolderPathOverride = null;
-            if (parentIsEmbeddedPackfile)
-            {
-                if (topLevelParentPath == null)
-                    return false;
-
-                string topLevelParentName = Path.GetFileName(topLevelParentPath);
-                parentKey = $"{topLevelParentName}--{parentFileName}";
-                parentFolderPathOverride = $"{GlobalCachePath}{parentKey}\\";
-            }
-            else
-            {
-                parentKey = parentFileName;
-            }
-
-            if (!IsFileCached(targetFileName, parentKey)) //Todo: Should parentFileName be parent key here?
-                ExtractAndCacheFile(parentFilePath, targetFileName, targetIsPackfile, parentIsEmbeddedPackfile, topLevelParentPath);
-
-            return IsFileCached(targetFileName, parentKey, parentFolderPathOverride);
-        }
-
-        public static bool IsFileCached(string filename, string parentKey, string parentFolderPathOverride = null)
-        {
-            if (Files.TryGetValue(parentKey, out List<FileRef> files))
-            {
-                foreach (var subFile in files)
-                {
-                    if (subFile.Filename != filename)
-                        continue;
-                    if (!subFile.FileExists(parentFolderPathOverride))
-                        break;
-
-                    return true;
-                }
-            }
-            return false;
-        }
-
-        private static Stream GetCachedFileStream(string filename, string parentKey, string parentFolderPathOverride = null)
-        {
-            if (Files.TryGetValue(parentKey, out List<FileRef> files))
-            {
-                foreach (var subFile in files)
-                {
-                    if (subFile.Filename != filename)
-                        continue;
-                    if (!subFile.TryOpenOrGet(out Stream fileStream, parentFolderPathOverride))
-                        break;
-
-                    return fileStream;
-                }
-            }
-            return Stream.Null;
-        }
-
-        //Todo: Make this support files that are two layers deep
-        public static void ExtractAndCacheFile(string parentFilePath, string filename, bool targetIsPackfile = false, bool parentIsEmbeddedPackfile = false, string topLevelParentPath = null)
-        {
-
-            if (parentIsEmbeddedPackfile && topLevelParentPath == null)
-                return;
-
-            string parentFileName = Path.GetFileName(parentFilePath);
-            string parentKey;
-            string outputPath;
-            string packfileOutputPath;
-            string topLevelParentName = "NOT SET";
-            if (parentIsEmbeddedPackfile)
-            {
-                topLevelParentName = Path.GetFileName(topLevelParentPath);
-                parentKey = $"{topLevelParentName}--{parentFileName}";
-                outputPath = $"{GlobalCachePath}{parentKey}\\{filename}";
-                packfileOutputPath = $"{GlobalCachePath}{parentKey}\\";
-            }
-            else
-            {
-                parentKey = parentFileName;
-                outputPath = $"{GlobalCachePath}{parentFileName}\\{filename}";
-                packfileOutputPath = $"{GlobalCachePath}{parentFileName}\\";
-            }
-
-            //Ensure output directory exists
-            Directory.CreateDirectory(packfileOutputPath);
-
-            //Create parent list if it doesn't exist. Get parent list
-            if (!Files.ContainsKey(parentKey))
-                Files[parentKey] = new List<FileRef>();
-            var fileRefs = Files[parentKey];
-
-            Packfile packfile = null;
-            if(parentIsEmbeddedPackfile)
-                packfile = _embeddedPackfiles.First(item => item.Value.Filename == parentFileName).Value;
-            else
-                packfile = _workingDirectoryPackfiles.First(item => item.Filename == parentFileName);
-
-
-            if (packfile.TryExtractSingleFile(filename, outputPath))
-            {
-                fileRefs.Add(new FileRef(filename, parentFileName));
-            }
-            else
-            {
-                //Failed to extract single file, so extract whole vpp
-                //Todo: Ask user if they want to extract the whole vpp
-                WindowLogger.Log($"Failed to extract single file \"{filename}\" from \"{parentFilePath}\". Extracting entire packfile.");
-                packfile.ExtractFileData(packfileOutputPath);
-                foreach (var subfileName in packfile.Filenames)
-                {
-                    fileRefs.Add(new FileRef(subfileName, parentFileName));
-                }
-            }
-
-            if (targetIsPackfile)
-            {
-                string targetCache = $"{GlobalCachePath}{parentFileName}--{filename}\\";
-                Directory.CreateDirectory(targetCache);
-
-                var targetPackfile = new Packfile(false);
-                targetPackfile.ReadMetadata(outputPath);
-                targetPackfile.ParseAsmFiles(targetCache);
-                _embeddedPackfiles[$"{parentFileName}--{filename}"] = targetPackfile;
-            }
-        }
-
         private static void UpdateWorkingDirectoryData()
         {
             Directory.CreateDirectory(_workingDirectory);
@@ -247,7 +52,7 @@ namespace OGE.Editor
 
             foreach (var filePath in directoryFiles)
             {
-                if(!PathHelpers.IsPackfilePath(filePath))
+                if (!PathHelpers.IsPackfilePath(filePath))
                     continue;
 
                 var packfile = new Packfile(false);
@@ -268,15 +73,159 @@ namespace OGE.Editor
             {
                 string parentFileName = Path.GetFileName(cacheFolder);
                 var files = Directory.GetFiles(cacheFolder);
-                if(files.Length <= 0)
+                if (files.Length <= 0)
                     continue;
 
-                _files[parentFileName] = new List<FileRef>();
+                _files[parentFileName] = new List<CacheFile>();
                 var fileList = _files[parentFileName];
                 foreach (var file in files)
                 {
-                    fileList.Add(new FileRef(Path.GetFileName(file), parentFileName));
+                    fileList.Add(new CacheFile(Path.GetFileName(file), parentFileName));
                 }
+            }
+        }
+
+        public static bool TryGetFile(string targetFilename, FileExplorerItemViewModel parent, out Stream stream, bool extractIfNotCached = false)
+        {
+            stream = Stream.Null;
+
+            if (parent.IsTopLevelPackfile)
+            {
+                //Extract file from parent - target is a level 1 file in this case
+                if (ExtractFileIfNotCached(targetFilename, parent))
+                    stream = GetCachedFileStream(targetFilename, parent.Filename);
+
+                return stream != Stream.Null;
+            }
+            else
+            {
+                //If targetParent isn't top level packfile, must first extract targetParent from it's parent.
+                var topParent = parent.Parent;
+                if (topParent == null)
+                    return false;
+
+                string parentKey = parent.Key;
+                string parentFolderPathOverride = $"{GlobalCachePath}{parentKey}\\";
+
+                //If file is cached, just return it.
+                if (IsFileCached(targetFilename, parentKey, parentFolderPathOverride))
+                {
+                    stream = GetCachedFileStream(targetFilename, parentKey, parentFolderPathOverride);
+                    return stream != Stream.Null;
+                }
+
+                //Ensure parent is extracted. Extract parent from top level parent - parent is level 1 file in this case
+                if (!IsFileCached(parent.Filename, topParent.Filename))
+                {
+                    ExtractAndCacheFile(parent.Filename, topParent);
+                }
+
+                //Try to extract target file from parent
+                if (!ExtractFileIfNotCached(targetFilename, parent))
+                    return false;
+
+                stream = GetCachedFileStream(targetFilename, parentKey, parentFolderPathOverride);
+                return stream != Stream.Null;
+            }
+        }
+
+        /// <summary>
+        /// Extracts a one level deep file from it's parent.
+        /// Does not work for files that are more than one level deep!
+        /// </summary>
+        /// <param name="targetFilename">The name of the target file to be extracted.</param>
+        /// <param name="parent">The parent file.</param>
+        /// <returns>Returns a bool that is true if it was successful and false otherwise.</returns>
+        public static bool ExtractFileIfNotCached(string targetFilename, FileExplorerItemViewModel parent)
+        {
+            string parentFolderPathOverride = !parent.IsTopLevelPackfile 
+                ? $"{GlobalCachePath}{parent.Key}\\" 
+                : null;
+
+            if (!IsFileCached(targetFilename, parent.Key))
+                ExtractAndCacheFile(targetFilename, parent);
+
+            return IsFileCached(targetFilename, parent.Key, parentFolderPathOverride);
+        }
+
+        public static bool IsFileCached(string filename, string parentKey, string parentFolderPathOverride = null)
+        {
+            if (_files.TryGetValue(parentKey, out List<CacheFile> files))
+            {
+                foreach (var subFile in files)
+                {
+                    if (!string.Equals(subFile.Filename, filename, StringComparison.CurrentCultureIgnoreCase))
+                        continue;
+                    if (!subFile.FileExists(parentFolderPathOverride))
+                        break;
+
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        private static Stream GetCachedFileStream(string filename, string parentKey, string parentFolderPathOverride = null)
+        {
+            if (_files.TryGetValue(parentKey, out List<CacheFile> files))
+            {
+                foreach (var subFile in files)
+                {
+                    if (!string.Equals(subFile.Filename, filename, StringComparison.CurrentCultureIgnoreCase))
+                        continue;
+                    if (!subFile.TryOpenOrGet(out Stream fileStream, parentFolderPathOverride))
+                        break;
+
+                    return fileStream;
+                }
+            }
+            return Stream.Null;
+        }
+
+        //Todo: Make this support files that are two layers deep
+        public static void ExtractAndCacheFile(string targetFilename, FileExplorerItemViewModel parent)
+        {
+            if (parent.IsEmbeddedPackfile && parent.Parent == null)
+                return;
+
+            //Form output paths
+            string packfileOutputPath = $"{GlobalCachePath}{parent.Key}\\";
+            string targetOutputPath = $"{packfileOutputPath}\\{targetFilename}";
+            //Ensure output directory exists
+            Directory.CreateDirectory(packfileOutputPath);
+            //Get parent subfiles list, create if it doesn't exist.
+            var fileRefs = _files.GetOrCreate(parent.Key);
+            //Get parent packfile
+            var packfile = parent.IsEmbeddedPackfile
+                ? _embeddedPackfiles.First(item => item.Value.Filename == parent.Filename).Value 
+                : _workingDirectoryPackfiles.First(item => item.Filename == parent.Filename);
+
+            if (packfile.TryExtractSingleFile(targetFilename, targetOutputPath))
+            {
+                fileRefs.Add(new CacheFile(targetFilename, parent.Filename));
+            }
+            else
+            {
+                //Failed to extract single file, so extract whole vpp
+                //Todo: Ask user if they want to extract the whole vpp
+                WindowLogger.Log($"Failed to extract single file \"{targetFilename}\" from \"{parent.FilePath}\". Extracting entire packfile.");
+                packfile.ExtractFileData(packfileOutputPath);
+                foreach (var subfileName in packfile.Filenames)
+                {
+                    fileRefs.Add(new CacheFile(subfileName, parent.Filename));
+                }
+            }
+
+            if (PathHelpers.IsPackfilePath(targetFilename))
+            {
+                string targetKey = $"{parent.Filename}--{targetFilename}";
+                string targetCache = $"{GlobalCachePath}{targetKey}\\";
+                Directory.CreateDirectory(targetCache);
+
+                var targetPackfile = new Packfile(false);
+                targetPackfile.ReadMetadata(targetOutputPath);
+                targetPackfile.ParseAsmFiles(targetCache);
+                _embeddedPackfiles[targetKey] = targetPackfile;
             }
         }
     }
