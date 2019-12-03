@@ -1,7 +1,6 @@
 ﻿using System.Diagnostics;
 using System.Reactive.Disposables;
 using System.Windows.Controls;
-using System.Windows.Forms;
 using System.Windows.Input;
 using OGE.Events;
 using OGE.ViewModels.FileExplorer;

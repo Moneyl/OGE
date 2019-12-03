@@ -37,10 +37,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Editor\Managers\" />
-  </ItemGroup>
-
-  <ItemGroup>
     <Resource Include="Resources\Checker.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Resource>

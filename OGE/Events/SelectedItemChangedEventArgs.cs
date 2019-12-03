@@ -1,5 +1,4 @@
-﻿using OGE.ViewModels;
-using OGE.ViewModels.FileExplorer;
+﻿using OGE.ViewModels.FileExplorer;
 
 namespace OGE.Events
 {

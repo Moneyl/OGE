@@ -1,4 +1,5 @@
-﻿using System;
+﻿
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -7,24 +8,20 @@ using OGE.Utility;
 using OGE.ViewModels.FileExplorer;
 using RfgTools.Formats.Packfiles;
 
-namespace OGE.Editor
+namespace OGE.Editor.Managers
 {
-    //Note: This class is a horrid mess and you shouldn't read it until I rewrite it
-    //Todo: Keep undo/redo stack and track changes
-    //Todo: Generate modinfo.xml from changes
-    public static class ProjectManager
+    public class CacheManager
     {
-        private static string _workingDirectory;
-        private static Dictionary<string, List<CacheFile>> _files = new Dictionary<string, List<CacheFile>>();
-        private static List<Packfile> _workingDirectoryPackfiles = new List<Packfile>(); //Depth 0 packfiles
+        private string _workingDirectory;
+        private Dictionary<string, List<CacheFile>> _files = new Dictionary<string, List<CacheFile>>();
+        private List<Packfile> _workingDirectoryPackfiles = new List<Packfile>(); //Depth 0 packfiles
         //Key is the parent file name, value is the packfile info. These are depth > 0 packfiles
-        private static Dictionary<string, Packfile> _embeddedPackfiles = new Dictionary<string, Packfile>();
+        private Dictionary<string, Packfile> _embeddedPackfiles = new Dictionary<string, Packfile>();
 
         //Todo: Maybe have subfolders for different working directories in EditorCache
-        public static string GlobalCachePath { get; } = @".\EditorCache\";
-        public static IReadOnlyList<Packfile> WorkingDirectoryPackfiles => _workingDirectoryPackfiles;
-
-        public static string WorkingDirectory
+        private string GlobalCachePath { get; }
+        public IReadOnlyList<Packfile> WorkingDirectoryPackfiles => _workingDirectoryPackfiles;
+        public string WorkingDirectory
         {
             get => _workingDirectory;
             set
@@ -34,17 +31,14 @@ namespace OGE.Editor
             }
         }
 
-        static ProjectManager()
+        public CacheManager(string globalCachePath)
         {
+            GlobalCachePath = globalCachePath;
+            Directory.CreateDirectory(GlobalCachePath);
             ScanEditorCache();
         }
 
-        public static void Init()
-        {
-            Directory.CreateDirectory(GlobalCachePath);
-        }
-
-        private static void UpdateWorkingDirectoryData()
+        private void UpdateWorkingDirectoryData()
         {
             Directory.CreateDirectory(_workingDirectory);
             _workingDirectoryPackfiles.Clear();
@@ -63,7 +57,7 @@ namespace OGE.Editor
             }
         }
 
-        public static void ScanEditorCache()
+        public void ScanEditorCache()
         {
             if (!Directory.Exists(GlobalCachePath))
                 Directory.CreateDirectory(GlobalCachePath);
@@ -85,7 +79,7 @@ namespace OGE.Editor
             }
         }
 
-        public static bool TryGetFile(string targetFilename, FileExplorerItemViewModel parent, out Stream stream, bool extractIfNotCached = false)
+        public bool TryGetFile(string targetFilename, FileExplorerItemViewModel parent, out Stream stream, bool extractIfNotCached = false)
         {
             stream = Stream.Null;
 
@@ -136,10 +130,10 @@ namespace OGE.Editor
         /// <param name="targetFilename">The name of the target file to be extracted.</param>
         /// <param name="parent">The parent file.</param>
         /// <returns>Returns a bool that is true if it was successful and false otherwise.</returns>
-        public static bool ExtractFileIfNotCached(string targetFilename, FileExplorerItemViewModel parent)
+        public bool ExtractFileIfNotCached(string targetFilename, FileExplorerItemViewModel parent)
         {
-            string parentFolderPathOverride = !parent.IsTopLevelPackfile 
-                ? $"{GlobalCachePath}{parent.Key}\\" 
+            string parentFolderPathOverride = !parent.IsTopLevelPackfile
+                ? $"{GlobalCachePath}{parent.Key}\\"
                 : null;
 
             if (!IsFileCached(targetFilename, parent.Key))
@@ -148,7 +142,7 @@ namespace OGE.Editor
             return IsFileCached(targetFilename, parent.Key, parentFolderPathOverride);
         }
 
-        public static bool IsFileCached(string filename, string parentKey, string parentFolderPathOverride = null)
+        public bool IsFileCached(string filename, string parentKey, string parentFolderPathOverride = null)
         {
             if (_files.TryGetValue(parentKey, out List<CacheFile> files))
             {
@@ -165,7 +159,7 @@ namespace OGE.Editor
             return false;
         }
 
-        private static Stream GetCachedFileStream(string filename, string parentKey, string parentFolderPathOverride = null)
+        private Stream GetCachedFileStream(string filename, string parentKey, string parentFolderPathOverride = null)
         {
             if (_files.TryGetValue(parentKey, out List<CacheFile> files))
             {
@@ -183,7 +177,7 @@ namespace OGE.Editor
         }
 
         //Todo: Make this support files that are two layers deep
-        public static void ExtractAndCacheFile(string targetFilename, FileExplorerItemViewModel parent)
+        public void ExtractAndCacheFile(string targetFilename, FileExplorerItemViewModel parent)
         {
             if (parent.IsEmbeddedPackfile && parent.Parent == null)
                 return;
@@ -197,7 +191,7 @@ namespace OGE.Editor
             var fileRefs = _files.GetOrCreate(parent.Key);
             //Get parent packfile
             var packfile = parent.IsEmbeddedPackfile
-                ? _embeddedPackfiles.First(item => item.Value.Filename == parent.Filename).Value 
+                ? _embeddedPackfiles.First(item => item.Value.Filename == parent.Filename).Value
                 : _workingDirectoryPackfiles.First(item => item.Filename == parent.Filename);
 
             if (packfile.TryExtractSingleFile(targetFilename, targetOutputPath))

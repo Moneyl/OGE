@@ -1,6 +1,5 @@
-﻿using System.Collections;
-using System.IO;
-using OGE.Editor;
+﻿using System.IO;
+using OGE.Editor.Managers;
 using OGE.Helpers;
 using ReactiveUI;
 using RfgTools.Formats.Packfiles;

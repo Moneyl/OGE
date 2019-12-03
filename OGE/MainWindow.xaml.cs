@@ -10,13 +10,11 @@ using ICSharpCode.AvalonEdit;
 using ICSharpCode.AvalonEdit.Document;
 using ICSharpCode.AvalonEdit.Highlighting;
 using MahApps.Metro.Controls;
-using OGE.Editor;
+using OGE.Editor.Managers;
 using OGE.Events;
 using OGE.Helpers;
 using OGE.Utility;
 using OGE.ViewModels;
-using OGE.ViewModels.FileExplorer;
-using OGE.Views;
 using ReactiveUI;
 using RfgTools.Formats.Textures;
 using Xceed.Wpf.AvalonDock.Layout;
@@ -37,12 +35,12 @@ namespace OGE
 
         public MainWindow()
         {
+            ProjectManager.Init();
             InitializeComponent();
 
             HighlightingManager = new HighlightingManager();
             LoadAdditionalHighlightingDefinitions();
             WindowLogger.SetLogPanel(LogStackPanel);
-            ProjectManager.Init();
 
             ViewModel = new AppViewModel();
 

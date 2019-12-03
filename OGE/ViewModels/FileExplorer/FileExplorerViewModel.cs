@@ -4,11 +4,9 @@ using System.IO;
 using System.Reactive;
 using System.Reactive.Linq;
 using System.Windows.Data;
-using System.Windows.Forms;
-using OGE.Editor;
+using OGE.Editor.Managers;
 using OGE.Events;
 using ReactiveUI;
-using Application = System.Windows.Application;
 
 namespace OGE.ViewModels.FileExplorer
 {
