@@ -7,7 +7,7 @@ using System.Windows.Media.Imaging;
 using RfgTools.Dependencies;
 using RfgTools.Formats.Textures;
 
-namespace OGE.Helpers
+namespace OGE.Utility.Helpers
 {
     //Todo: Might be better to have this class in the RfgTools repo
     //Todo: Consider replacing with ImageSharp, assuming it can more easily handle a wide variety of image formats. Maybe could handle DXT compression too

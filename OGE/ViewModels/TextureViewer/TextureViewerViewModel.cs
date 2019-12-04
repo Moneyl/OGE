@@ -5,7 +5,7 @@ using System.Reactive.Linq;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Windows.Media.Imaging;
-using OGE.Helpers;
+using OGE.Utility.Helpers;
 using ReactiveUI;
 using RfgTools.Formats.Textures;
 

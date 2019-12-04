@@ -4,7 +4,7 @@ using System.Reactive.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Documents;
-using OGE.Events;
+using OGE.Editor.Events;
 using OGE.ViewModels;
 using OGE.ViewModels.FileExplorer;
 using ReactiveUI;

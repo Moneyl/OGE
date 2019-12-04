@@ -1,8 +1,7 @@
-﻿
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
 
-namespace OGE.Helpers
+namespace OGE.Utility.Helpers
 {
     public static class PathHelpers
     {

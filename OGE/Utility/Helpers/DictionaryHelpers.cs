@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace OGE.Helpers
+namespace OGE.Utility.Helpers
 {
     public static class DictionaryHelpers
     {

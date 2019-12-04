@@ -10,10 +10,10 @@ using ICSharpCode.AvalonEdit;
 using ICSharpCode.AvalonEdit.Document;
 using ICSharpCode.AvalonEdit.Highlighting;
 using MahApps.Metro.Controls;
+using OGE.Editor.Events;
 using OGE.Editor.Managers;
-using OGE.Events;
-using OGE.Helpers;
 using OGE.Utility;
+using OGE.Utility.Helpers;
 using OGE.ViewModels;
 using ReactiveUI;
 using RfgTools.Formats.Textures;
@@ -143,8 +143,10 @@ namespace OGE
 
         private void LoadAdditionalHighlightingDefinitions()
         {
-            LoadHighlightingDefinition(@".\Themes\Highlighting\Lua-Mode.xshd", "Lua-Mode", new []{".lua"});
-            LoadHighlightingDefinition(@".\Themes\Highlighting\XML-Mode.xshd", "Xml", PathHelpers.XmlExtensions.AsArray());
+            LoadHighlightingDefinition(@".\Resources\Themes\Highlighting\Lua-Mode.xshd", 
+                "Lua-Mode", new []{".lua"});
+            LoadHighlightingDefinition(@".\Resources\Themes\Highlighting\XML-Mode.xshd", 
+                "Xml", PathHelpers.XmlExtensions.AsArray());
         }
 
         private void LoadHighlightingDefinition(string definitionPath, string definitionName, string[] extensions)

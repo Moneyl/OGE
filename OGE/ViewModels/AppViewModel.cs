@@ -1,7 +1,7 @@
 ﻿using System.IO;
 using System.Reactive;
 using System.Windows.Forms;
-using OGE.Events;
+using OGE.Editor.Events;
 using OGE.Utility;
 using ReactiveUI;
 

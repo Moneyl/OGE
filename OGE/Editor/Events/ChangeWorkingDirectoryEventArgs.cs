@@ -1,5 +1,5 @@
 ﻿
-namespace OGE.Events
+namespace OGE.Editor.Events
 {
     /// <summary>
     /// Triggered when the working directory for the file explorer changes

@@ -2,7 +2,7 @@
 using System.Reactive.Disposables;
 using System.Windows.Controls;
 using System.Windows.Input;
-using OGE.Events;
+using OGE.Editor.Events;
 using OGE.ViewModels.FileExplorer;
 using ReactiveUI;
 

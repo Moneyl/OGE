@@ -1,6 +1,6 @@
 ﻿using OGE.ViewModels.FileExplorer;
 
-namespace OGE.Events
+namespace OGE.Editor.Events
 {
     /// <summary>
     /// Triggered when the selected item in the file explorer changes

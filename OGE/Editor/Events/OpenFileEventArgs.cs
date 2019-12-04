@@ -1,6 +1,6 @@
 ﻿using OGE.ViewModels.FileExplorer;
 
-namespace OGE.Events
+namespace OGE.Editor.Events
 {
     public class OpenFileEventArgs
     {

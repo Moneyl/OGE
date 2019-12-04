@@ -3,8 +3,8 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using OGE.Helpers;
 using OGE.Utility;
+using OGE.Utility.Helpers;
 using OGE.ViewModels.FileExplorer;
 using RfgTools.Formats.Packfiles;
 
