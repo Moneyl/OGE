@@ -35,7 +35,8 @@ namespace OGE
 
         public MainWindow()
         {
-            ProjectManager.Init();
+            SettingsManager.Init();
+            ProjectManager.Init(SettingsManager.DataFolderPath);
             InitializeComponent();
 
             HighlightingManager = new HighlightingManager();

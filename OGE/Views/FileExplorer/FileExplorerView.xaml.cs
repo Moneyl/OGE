@@ -17,11 +17,7 @@ namespace OGE.Views.FileExplorer
         {
             InitializeComponent();
 
-#if DEBUG
-            ViewModel = new FileExplorerViewModel(@"C:\Users\moneyl\RFG Unpack\data"); //Set debug dir for convenience
-#else
-            ViewModel = new FileExplorerViewModel(@"C:\");
-#endif
+            ViewModel = new FileExplorerViewModel(@"");
             FileTree.ItemsSource = ViewModel.FileList;
 
             this.WhenActivated(disposable =>
