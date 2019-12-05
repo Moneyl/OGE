@@ -40,6 +40,9 @@ namespace OGE.Editor.Managers
 
         private void UpdateWorkingDirectoryData()
         {
+            if(!Directory.Exists(_workingDirectory))
+                return;
+
             Directory.CreateDirectory(_workingDirectory);
             _workingDirectoryPackfiles.Clear();
             var directoryFiles = Directory.GetFiles(WorkingDirectory);

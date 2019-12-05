@@ -24,9 +24,10 @@ namespace OGE.Editor.Managers
 
         }
 
-        public static void Init()
+        public static void Init(string initialWorkingDirectory)
         {
             _cache = new CacheManager(GlobalCachePath);
+            WorkingDirectory = initialWorkingDirectory;
         }
 
         public static bool TryGetFile(string targetFilename, FileExplorerItemViewModel parent, out Stream stream, bool extractIfNotCached = false)
