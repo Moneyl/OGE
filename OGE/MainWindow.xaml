@@ -35,8 +35,6 @@
         <mah:WindowCommands>
             <Menu Margin="5 5 0 0">
                 <MenuItem Header="File">
-                    <MenuItem Header="Open folder" Name="MenuOpenFolderButton"/>
-                    <Separator/>
                     <MenuItem Header="Exit" Click="MenuExit_OnClick"/>
                 </MenuItem>
                 <MenuItem Header="View"/>
