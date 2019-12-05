@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Windows;
@@ -49,8 +49,9 @@ namespace OGE.Views.TextureViewer
                         v => v.TextureList.SelectedItem)
                     .DisposeWith(disposable);
 
-                //Set first entry as selected item
-                ViewModel.SelectedItem = TextureList.Items[0] as TextureEntryViewModel;
+                //Set first entry as selected item if not already set
+                if(ViewModel.SelectedItem == null)
+                    ViewModel.SelectedItem = TextureList.Items[0] as TextureEntryViewModel;
             });
 
             MessageBus.Current.Listen<TextureViewerGlobalSettingChangedEventArgs>()
