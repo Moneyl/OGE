@@ -1,8 +1,11 @@
-﻿using System;
+using System;
 using System.Reactive.Disposables;
+using System.Reactive.Linq;
 using System.Windows;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using OGE.Editor.Events;
+using OGE.Editor.Managers;
 using OGE.ViewModels.TextureViewer;
 using ReactiveUI;
 using RfgTools.Formats.Textures;
@@ -23,7 +26,12 @@ namespace OGE.Views.TextureViewer
         {
             InitializeComponent();
             ViewModel = new TextureViewerViewModel(peg);
-            
+            _checkeredImageBrush = (ImageBrush)ImageViewBorder.Background; //Save checkered background for toggling between dark background
+
+            //Set initial checkbox value to global setting and update.
+            BackgroundCheckbox.IsChecked = SettingsManager.TextureViewerDarkBackground;
+            UpdateBackgroundPattern();
+
             this.WhenActivated(disposable =>
             {
                 this.OneWayBind(ViewModel,
@@ -44,14 +52,41 @@ namespace OGE.Views.TextureViewer
                 //Set first entry as selected item
                 ViewModel.SelectedItem = TextureList.Items[0] as TextureEntryViewModel;
             });
+
+            MessageBus.Current.Listen<TextureViewerGlobalSettingChangedEventArgs>()
+                .Subscribe(HandleGlobalSettingsChange);
+        }
+
+        /// <summary>
+        /// Updates checkbox and background when the global background setting for
+        /// texture viewer documents changes. This value is the same for all
+        /// texture viewer documents.
+        /// </summary>
+        /// <param name="args"></param>
+        private void HandleGlobalSettingsChange(TextureViewerGlobalSettingChangedEventArgs args)
+        {
+            //Update checkbox value and background
+            BackgroundCheckbox.IsChecked = SettingsManager.TextureViewerDarkBackground;
+            UpdateBackgroundPattern();
         }
 
         private void BackgroundCheckbox_OnClick(object sender, RoutedEventArgs e)
         {
+            //Get checked value from checkbox
             var isChecked = ((CheckBox)sender).IsChecked;
-            if (isChecked != null && (bool)isChecked)
+            if(isChecked == null)
+                return;
+            SettingsManager.TextureViewerDarkBackground = (bool)isChecked;
+
+            //Send event to tell all other texture viewers to update their backgrounds
+            MessageBus.Current.SendMessage(new TextureViewerGlobalSettingChangedEventArgs());
+        }
+
+        private void UpdateBackgroundPattern()
+        {
+            //Uses global value in SettingsManager to determine background type across texture viewer documents
+            if (SettingsManager.TextureViewerDarkBackground)
             {
-                _checkeredImageBrush = (ImageBrush)ImageViewBorder.Background;
                 var uri = new Uri("pack://application:,,,/OGE;component/Resources/Solid.png");
                 ImageViewBorder.Background = new ImageBrush(new BitmapImage(uri))
                 {
