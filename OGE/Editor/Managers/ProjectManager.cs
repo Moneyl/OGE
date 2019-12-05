@@ -1,5 +1,7 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.IO;
+using System.Security.Policy;
+using System.Windows.Forms;
 using OGE.ViewModels.FileExplorer;
 using RfgTools.Formats.Packfiles;
 
@@ -18,6 +20,7 @@ namespace OGE.Editor.Managers
             get => _cache.WorkingDirectory;
             set => _cache.WorkingDirectory = value;
         }
+        public static Project CurrentProject { get; private set; }
 
         static ProjectManager()
         {
@@ -38,6 +41,21 @@ namespace OGE.Editor.Managers
         public static bool IsFileCached(string filename, string parentKey, string parentFolderPathOverride = null)
         {
             return _cache.IsFileCached(filename, parentKey, parentFolderPathOverride);
+        }
+
+        public static void OpenProject(string projectFilePath)
+        {
+
+        }
+
+        public static void CloseCurrentProject()
+        {
+
+        }
+
+        public static void CreateNewProject(string projectFolderPath, string projectName)
+        {
+
         }
     }
 }

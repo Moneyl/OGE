@@ -35,6 +35,10 @@
         <mah:WindowCommands>
             <Menu Margin="5 5 0 0">
                 <MenuItem Header="File">
+                    <MenuItem Header="Open project" Name="MenuOpenProjectButton"/>
+                    <MenuItem Header="New project" Name="MenuNewProjectButton"/>
+                    <MenuItem Header="Close project" Name="MenuCloseProjectButton"/>
+                    <Separator/>
                     <MenuItem Header="Exit" Click="MenuExit_OnClick"/>
                 </MenuItem>
                 <MenuItem Header="View"/>

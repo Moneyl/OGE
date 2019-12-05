@@ -51,6 +51,21 @@ namespace OGE
                         vm => vm.ShowAboutMessageCommand,
                         v => v.MenuAboutButton)
                     .DisposeWith(disposable);
+
+                this.BindCommand(ViewModel,
+                        vm => vm.OpenProjectCommand,
+                        v => v.MenuOpenProjectButton)
+                    .DisposeWith(disposable);
+
+                this.BindCommand(ViewModel,
+                        vm => vm.NewProjectCommand,
+                        v => v.MenuNewProjectButton)
+                    .DisposeWith(disposable);
+
+                this.BindCommand(ViewModel,
+                        vm => vm.CloseProjectCommand,
+                        v => v.MenuCloseProjectButton)
+                    .DisposeWith(disposable);
             });
 
             MessageBus.Current.Listen<OpenFileEventArgs>()

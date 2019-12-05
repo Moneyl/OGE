@@ -1,4 +1,4 @@
-﻿
+
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -19,7 +19,7 @@ namespace OGE.Editor.Managers
         private Dictionary<string, Packfile> _embeddedPackfiles = new Dictionary<string, Packfile>();
 
         //Todo: Maybe have subfolders for different working directories in EditorCache
-        private string GlobalCachePath { get; }
+        private string CachePath { get; }
         public IReadOnlyList<Packfile> WorkingDirectoryPackfiles => _workingDirectoryPackfiles;
         public string WorkingDirectory
         {
@@ -31,10 +31,10 @@ namespace OGE.Editor.Managers
             }
         }
 
-        public CacheManager(string globalCachePath)
+        public CacheManager(string cachePath)
         {
-            GlobalCachePath = globalCachePath;
-            Directory.CreateDirectory(GlobalCachePath);
+            CachePath = cachePath;
+            Directory.CreateDirectory(CachePath);
             ScanEditorCache();
         }
 
@@ -54,7 +54,7 @@ namespace OGE.Editor.Managers
 
                 var packfile = new Packfile(false);
                 packfile.ReadMetadata(filePath);
-                packfile.ParseAsmFiles($"{GlobalCachePath}{packfile.Filename}\\");
+                packfile.ParseAsmFiles($"{CachePath}{packfile.Filename}\\");
 
                 _workingDirectoryPackfiles.Add(packfile);
             }
@@ -62,10 +62,10 @@ namespace OGE.Editor.Managers
 
         public void ScanEditorCache()
         {
-            if (!Directory.Exists(GlobalCachePath))
-                Directory.CreateDirectory(GlobalCachePath);
+            if (!Directory.Exists(CachePath))
+                Directory.CreateDirectory(CachePath);
 
-            var cacheFolders = Directory.GetDirectories(GlobalCachePath);
+            var cacheFolders = Directory.GetDirectories(CachePath);
             foreach (var cacheFolder in cacheFolders)
             {
                 string parentFileName = Path.GetFileName(cacheFolder);
@@ -102,7 +102,7 @@ namespace OGE.Editor.Managers
                     return false;
 
                 string parentKey = parent.Key;
-                string parentFolderPathOverride = $"{GlobalCachePath}{parentKey}\\";
+                string parentFolderPathOverride = $"{CachePath}{parentKey}\\";
 
                 //If file is cached, just return it.
                 if (IsFileCached(targetFilename, parentKey, parentFolderPathOverride))
@@ -136,7 +136,7 @@ namespace OGE.Editor.Managers
         public bool ExtractFileIfNotCached(string targetFilename, FileExplorerItemViewModel parent)
         {
             string parentFolderPathOverride = !parent.IsTopLevelPackfile
-                ? $"{GlobalCachePath}{parent.Key}\\"
+                ? $"{CachePath}{parent.Key}\\"
                 : null;
 
             if (!IsFileCached(targetFilename, parent.Key))
@@ -186,7 +186,7 @@ namespace OGE.Editor.Managers
                 return;
 
             //Form output paths
-            string packfileOutputPath = $"{GlobalCachePath}{parent.Key}\\";
+            string packfileOutputPath = $"{CachePath}{parent.Key}\\";
             string targetOutputPath = $"{packfileOutputPath}\\{targetFilename}";
             //Ensure output directory exists
             Directory.CreateDirectory(packfileOutputPath);
@@ -216,7 +216,7 @@ namespace OGE.Editor.Managers
             if (PathHelpers.IsPackfilePath(targetFilename))
             {
                 string targetKey = $"{parent.Filename}--{targetFilename}";
-                string targetCache = $"{GlobalCachePath}{targetKey}\\";
+                string targetCache = $"{CachePath}{targetKey}\\";
                 Directory.CreateDirectory(targetCache);
 
                 var targetPackfile = new Packfile(false);
