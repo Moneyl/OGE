@@ -48,8 +48,8 @@ namespace OGE
             this.WhenActivated(disposable =>
             {
                 this.BindCommand(ViewModel,
-                        vm => vm.OpenWorkingFolder,
-                        v => v.MenuOpenFolderButton)
+                        vm => vm.ShowAboutMessageCommand,
+                        v => v.MenuAboutButton)
                     .DisposeWith(disposable);
             });
 
