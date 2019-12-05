@@ -9,32 +9,15 @@ namespace OGE.ViewModels
 {
     public class AppViewModel : ReactiveObject
     {
-        private FolderBrowserDialog _openFolderDialog = new FolderBrowserDialog();
-        private string _workingDirectory;
-
-        public string WorkingDirectory
-        {
-            get => _workingDirectory;
-            set => this.RaiseAndSetIfChanged(ref _workingDirectory, value);
-        }
-        public ReactiveCommand<Unit, Unit> OpenWorkingFolder { get; }
+        public ReactiveCommand<Unit, Unit> ShowAboutMessageCommand;
 
         public AppViewModel()
         {
-            OpenWorkingFolder = ReactiveCommand.Create(() =>
+            ShowAboutMessageCommand = ReactiveCommand.Create(() =>
             {
-                _openFolderDialog.ShowDialog();
-                string folderPath = _openFolderDialog.SelectedPath;
-                if (!Directory.Exists(folderPath))
-                {
-                    WindowLogger.Log($"Folder does not exist at \"{folderPath}\"");
-                    return;
-                }
-
-                WindowLogger.Log($"Setting working directory to \"{folderPath}\"");
-                WorkingDirectory = folderPath;
-
-                MessageBus.Current.SendMessage(new ChangeWorkingDirectoryEventArgs(WorkingDirectory));
+                MessageBox.Show("OGE is an open source modding tool for Red Faction Guerrilla Re-Mars-tered. " + 
+                                "For more info, see it's github page: https://github.com/Moneyl/OGE", "About OGE",
+                                MessageBoxButtons.OK, MessageBoxIcon.Information);
             });
         }
     }

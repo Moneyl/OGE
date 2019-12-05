@@ -40,7 +40,9 @@
                     <MenuItem Header="Exit" Click="MenuExit_OnClick"/>
                 </MenuItem>
                 <MenuItem Header="View"/>
-                <MenuItem Header="Help"/>
+                <MenuItem Header="Help">
+                    <MenuItem Header="About" Name="MenuAboutButton"/>
+                </MenuItem>
             </Menu>
         </mah:WindowCommands>
     </mah:MetroWindow.LeftWindowCommands>
