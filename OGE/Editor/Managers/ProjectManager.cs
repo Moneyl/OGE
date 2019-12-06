@@ -57,5 +57,10 @@ namespace OGE.Editor.Managers
         {
 
         }
+
+        public static void CopyFileToProjectCache(string filename)
+        {
+
+        }
     }
 }
