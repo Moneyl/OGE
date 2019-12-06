@@ -53,6 +53,11 @@ namespace OGE.Editor.Managers
 
         }
 
+        public static void SaveCurrentProject()
+        {
+
+        }
+
         public static void CreateNewProject(string projectFolderPath, string projectName)
         {
 

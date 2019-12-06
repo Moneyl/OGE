@@ -10,10 +10,17 @@ namespace OGE.ViewModels
 {
     public class AppViewModel : ReactiveObject
     {
+        private OpenFileDialog _openFileDialog = new OpenFileDialog
+        {
+            Filter = "OGE project file (*.oge_proj)|*.oge_proj",
+            Title = "Select an OGE project file (*.oge_proj)"
+        };
+
         public ReactiveCommand<Unit, Unit> ShowAboutMessageCommand;
         public ReactiveCommand<Unit, Unit> OpenProjectCommand;
         public ReactiveCommand<Unit, Unit> NewProjectCommand;
         public ReactiveCommand<Unit, Unit> CloseProjectCommand;
+        public ReactiveCommand<Unit, Unit> SaveProjectCommand;
 
         public AppViewModel()
         {
@@ -25,10 +32,8 @@ namespace OGE.ViewModels
             });
             OpenProjectCommand = ReactiveCommand.Create(() =>
             {
-                //Get project file path
-                //Check for valid path
-                //Pass to ProjectManager
-                //ProjectManager.OpenProject();
+                _openFileDialog.ShowDialog();
+                ProjectManager.OpenProject(_openFileDialog.FileName);
             });
             NewProjectCommand = ReactiveCommand.Create(() =>
             {
@@ -36,12 +41,19 @@ namespace OGE.ViewModels
                 //Pass to project manager
                 //ProjectManager.CreateNewProject();
             });
+            SaveProjectCommand = ReactiveCommand.Create(() =>
+            {
+                ProjectManager.SaveCurrentProject();
+            });
             CloseProjectCommand = ReactiveCommand.Create(() =>
             {
-                //If project is open, ask user to confirm if they want to close it
-                //Ask if they want to save any unsaved changes, warn about data loss if not
-                //Pass to project manager
-                ProjectManager.CloseCurrentProject();
+                //Todo: Add option to save unsaved changes
+                var result = MessageBox.Show("Are you sure you'd like to close the project? Any unsaved changes will be lost.",
+                    "Confirm closing project", MessageBoxButtons.YesNoCancel);
+                if (result == DialogResult.Yes)
+                {
+                    ProjectManager.CloseCurrentProject();
+                }
             });
         }
     }

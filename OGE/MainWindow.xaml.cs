@@ -63,6 +63,11 @@ namespace OGE
                     .DisposeWith(disposable);
 
                 this.BindCommand(ViewModel,
+                        vm => vm.SaveProjectCommand,
+                        v => v.MenuSaveProjectButton)
+                    .DisposeWith(disposable);
+
+                this.BindCommand(ViewModel,
                         vm => vm.CloseProjectCommand,
                         v => v.MenuCloseProjectButton)
                     .DisposeWith(disposable);
