@@ -85,45 +85,34 @@ namespace OGE.Editor.Managers
         public bool TryGetFile(string targetFilename, FileExplorerItemViewModel parent, out Stream stream, bool extractIfNotCached = false)
         {
             stream = Stream.Null;
+            string parentFolderPathOverride = $"{CachePath}{parent.Key}\\";
 
-            if (parent.IsTopLevelPackfile)
+            //Handle depth 1 files (direct subfile of working dir packfile)
+            if (parent.IsTopLevelPackfile) 
             {
-                //Extract file from parent - target is a level 1 file in this case
+                //Extract target file from parent
                 if (ExtractFileIfNotCached(targetFilename, parent))
                     stream = GetCachedFileStream(targetFilename, parent.Filename);
 
                 return stream != Stream.Null;
             }
-            else
+            //Handle uncached depth > 1 files
+            if (!IsFileCached(targetFilename, parent.Key, parentFolderPathOverride)) 
             {
-                //If targetParent isn't top level packfile, must first extract targetParent from it's parent.
-                var topParent = parent.Parent;
-                if (topParent == null)
+                //If parent isn't top level pack file, must first extract parent from it's parent (parent.Parent)
+                if (parent.Parent == null)
                     return false;
 
-                string parentKey = parent.Key;
-                string parentFolderPathOverride = $"{CachePath}{parentKey}\\";
-
-                //If file is cached, just return it.
-                if (IsFileCached(targetFilename, parentKey, parentFolderPathOverride))
-                {
-                    stream = GetCachedFileStream(targetFilename, parentKey, parentFolderPathOverride);
-                    return stream != Stream.Null;
-                }
-
-                //Ensure parent is extracted. Extract parent from top level parent - parent is level 1 file in this case
-                if (!IsFileCached(parent.Filename, topParent.Filename))
-                {
-                    ExtractAndCacheFile(parent.Filename, topParent);
-                }
+                //Ensure parent is extracted from it's parent
+                ExtractFileIfNotCached(parent.Filename, parent.Parent);
 
                 //Try to extract target file from parent
                 if (!ExtractFileIfNotCached(targetFilename, parent))
                     return false;
-
-                stream = GetCachedFileStream(targetFilename, parentKey, parentFolderPathOverride);
-                return stream != Stream.Null;
             }
+
+            stream = GetCachedFileStream(targetFilename, parent.Key, parentFolderPathOverride);
+            return stream != Stream.Null;
         }
 
         /// <summary>
@@ -139,10 +128,8 @@ namespace OGE.Editor.Managers
                 ? $"{CachePath}{parent.Key}\\"
                 : null;
 
-            if (!IsFileCached(targetFilename, parent.Key))
-                ExtractAndCacheFile(targetFilename, parent);
-
-            return IsFileCached(targetFilename, parent.Key, parentFolderPathOverride);
+            //If file isn't cached, extract and return success value of that
+            return IsFileCached(targetFilename, parent.Key) || ExtractAndCacheFile(targetFilename, parent);
         }
 
         public bool IsFileCached(string filename, string parentKey, string parentFolderPathOverride = null)
@@ -180,10 +167,10 @@ namespace OGE.Editor.Managers
         }
 
         //Todo: Make this support files that are two layers deep
-        public void ExtractAndCacheFile(string targetFilename, FileExplorerItemViewModel parent)
+        public bool ExtractAndCacheFile(string targetFilename, FileExplorerItemViewModel parent)
         {
             if (parent.IsEmbeddedPackfile && parent.Parent == null)
-                return;
+                return false;
 
             //Form output paths
             string packfileOutputPath = $"{CachePath}{parent.Key}\\";
@@ -224,6 +211,7 @@ namespace OGE.Editor.Managers
                 targetPackfile.ParseAsmFiles(targetCache);
                 _embeddedPackfiles[targetKey] = targetPackfile;
             }
+            return true;
         }
     }
 }
