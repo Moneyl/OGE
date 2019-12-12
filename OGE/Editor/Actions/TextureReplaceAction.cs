@@ -9,7 +9,7 @@ namespace OGE.Editor.Actions
     /// This involves replacing a sub-texture of a peg/vbm file
     /// with another texture.
     /// </summary>
-    public class TextureReplaceAction : IReversibleAction
+    public class TextureReplaceAction : ITrackedAction
     {
         public string PegName { get; private set; }
         public string SubTextureName { get; private set; }
@@ -21,12 +21,12 @@ namespace OGE.Editor.Actions
 
         }
 
-        void IReversibleAction.Undo()
+        void ITrackedAction.Undo()
         {
             throw new NotImplementedException();
         }
 
-        void IReversibleAction.Redo()
+        void ITrackedAction.Redo()
         {
             throw new NotImplementedException();
         }

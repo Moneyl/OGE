@@ -8,20 +8,19 @@ namespace OGE.Editor
     {
         private CacheManager _cache;
 
-        public string Name { get; private set; }
-        public string Author { get; private set; }
-        public string Version { get; private set; }
-        public string Description { get; private set; }
+        public string Name { get; set; }
+        public string Author { get; set; }
+        public string Version { get; set; }
+        public string Description { get; set; }
 
         public string ProjectFolderPath { get; private set; }
-        public Dictionary<CacheFile, List<IReversibleAction>> Changes { get; }
+        public Dictionary<CacheFile, List<ITrackedAction>> Changes { get; }
 
-        public Project(string projectFolderPath, string projectName)
+        public Project(string projectFolderPath)
         {
             ProjectFolderPath = projectFolderPath;
-            Name = projectName;
             _cache = new CacheManager($"{ProjectFolderPath}\\Cache\\");
-            Changes = new Dictionary<CacheFile, List<IReversibleAction>>();
+            Changes = new Dictionary<CacheFile, List<ITrackedAction>>();
         }
 
         public void GenerateModinfoFromChanges(string outputPath)
@@ -29,7 +28,7 @@ namespace OGE.Editor
 
         }
 
-        public void Save(string outputPath)
+        public void Save(string outputPath = null)
         {
 
         }
@@ -39,12 +38,12 @@ namespace OGE.Editor
 
         }
 
-        public void AddFileEdit(CacheFile targetFile, IReversibleAction editAction)
+        public void AddFileEdit(CacheFile targetFile, ITrackedAction editAction)
         {
 
         }
 
-        public void RemoveFileEdit(CacheFile targetFile, IReversibleAction editAction)
+        public void RemoveFileEdit(CacheFile targetFile, ITrackedAction editAction)
         {
 
         }

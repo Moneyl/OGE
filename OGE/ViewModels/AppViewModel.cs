@@ -1,9 +1,7 @@
-﻿using System.IO;
-using System.Reactive;
+﻿using System.Reactive;
 using System.Windows.Forms;
-using OGE.Editor.Events;
 using OGE.Editor.Managers;
-using OGE.Utility;
+using OGE.Views.Dialogs;
 using ReactiveUI;
 
 namespace OGE.ViewModels
@@ -18,7 +16,6 @@ namespace OGE.ViewModels
 
         public ReactiveCommand<Unit, Unit> ShowAboutMessageCommand;
         public ReactiveCommand<Unit, Unit> OpenProjectCommand;
-        public ReactiveCommand<Unit, Unit> NewProjectCommand;
         public ReactiveCommand<Unit, Unit> CloseProjectCommand;
         public ReactiveCommand<Unit, Unit> SaveProjectCommand;
 
@@ -34,12 +31,6 @@ namespace OGE.ViewModels
             {
                 _openFileDialog.ShowDialog();
                 ProjectManager.OpenProject(_openFileDialog.FileName);
-            });
-            NewProjectCommand = ReactiveCommand.Create(() =>
-            {
-                //Create dialog requesting user input: project folder path, project name, templates, settings, etc
-                //Pass to project manager
-                //ProjectManager.CreateNewProject();
             });
             SaveProjectCommand = ReactiveCommand.Create(() =>
             {

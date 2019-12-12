@@ -1,13 +1,10 @@
 using System.Collections.Generic;
 using System.IO;
-using System.Security.Policy;
-using System.Windows.Forms;
 using OGE.ViewModels.FileExplorer;
 using RfgTools.Formats.Packfiles;
 
 namespace OGE.Editor.Managers
 {
-    //Note: This class is a horrid mess and you shouldn't read it until I rewrite it
     //Todo: Keep undo/redo stack and track changes
     //Todo: Generate modinfo.xml from changes
     public static class ProjectManager
@@ -45,27 +42,39 @@ namespace OGE.Editor.Managers
 
         public static void OpenProject(string projectFilePath)
         {
-
+            CurrentProject = new Project(projectFilePath);
+            CurrentProject.Load(projectFilePath);
         }
 
         public static void CloseCurrentProject()
         {
-
+            //Todo: Ask if user wants to save unsaved changes
+            CurrentProject.Save();
         }
 
         public static void SaveCurrentProject()
         {
-
+            CurrentProject.Save();
         }
 
-        public static void CreateNewProject(string projectFolderPath, string projectName)
+        public static void CreateNewProject(string projectFolderPath, string projectName, string author = null, string description = null, string version = null)
         {
-
+            CurrentProject = new Project(projectFolderPath)
+            {
+                Name = projectName,
+                Author = author,
+                Description = description,
+                Version = version
+            };
         }
 
         public static void CopyFileToProjectCache(string filename)
         {
-
+            //Check if in editor cache and check if there's a valid project currently loaded
+            //If so, check if already in project cache
+                    //If so, exit
+                    //If not, copy to project cache
+                //Else, exit
         }
     }
 }

@@ -27,9 +27,10 @@
     <PackageReference Include="AvalonEdit" Version="6.0.0" />
     <PackageReference Include="Dirkster.AvalonDock" Version="3.6.2" />
     <PackageReference Include="Dirkster.AvalonDock.Themes.VS2013" Version="3.6.2" />
+    <PackageReference Include="MahApps.Metro.SimpleChildWindow" Version="2.0.0-alpha0032" />
     <PackageReference Include="ReactiveUI.Events.WPF" Version="10.5.31" />
     <PackageReference Include="ReactiveUI.WPF" Version="10.5.31" />
-    <PackageReference Include="MahApps.Metro" Version="2.0.0-alpha0605" />
+    <PackageReference Include="MahApps.Metro" Version="2.0.0-alpha0660" />
   </ItemGroup>
 
   <ItemGroup>

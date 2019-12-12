@@ -10,11 +10,13 @@ using ICSharpCode.AvalonEdit;
 using ICSharpCode.AvalonEdit.Document;
 using ICSharpCode.AvalonEdit.Highlighting;
 using MahApps.Metro.Controls;
+using MahApps.Metro.SimpleChildWindow;
 using OGE.Editor.Events;
 using OGE.Editor.Managers;
 using OGE.Utility;
 using OGE.Utility.Helpers;
 using OGE.ViewModels;
+using OGE.Views.Dialogs;
 using ReactiveUI;
 using RfgTools.Formats.Textures;
 using Xceed.Wpf.AvalonDock.Layout;
@@ -58,11 +60,6 @@ namespace OGE
                     .DisposeWith(disposable);
 
                 this.BindCommand(ViewModel,
-                        vm => vm.NewProjectCommand,
-                        v => v.MenuNewProjectButton)
-                    .DisposeWith(disposable);
-
-                this.BindCommand(ViewModel,
                         vm => vm.SaveProjectCommand,
                         v => v.MenuSaveProjectButton)
                     .DisposeWith(disposable);
@@ -100,11 +97,8 @@ namespace OGE
                     if (!ProjectManager.TryGetFile(targetItem.Filename, targetItem.Parent, out Stream docStream, true))
                         return;
 
-                    string docString;
-                    using (StreamReader reader = new StreamReader(docStream))
-                    {
-                        docString = reader.ReadToEnd();
-                    }
+                    using StreamReader reader = new StreamReader(docStream);
+                    string docString = reader.ReadToEnd();
 
                     var definition = HighlightingManager.GetDefinitionByExtension(targetItem.FileExtension);
                     var document = new LayoutDocument
@@ -172,11 +166,20 @@ namespace OGE
 
         private void LoadHighlightingDefinition(string definitionPath, string definitionName, string[] extensions)
         {
-            using (var reader = new XmlTextReader(new FileStream(definitionPath, FileMode.Open)))
-            {
-                IHighlightingDefinition definition = HighlightingLoader.Load(reader, HighlightingManager);
-                HighlightingManager.RegisterHighlighting(definitionName, extensions, definition);
-            }
+            using var stream = new FileStream(definitionPath, FileMode.Open);
+            using var reader = new XmlTextReader(stream);
+            IHighlightingDefinition definition = HighlightingLoader.Load(reader, HighlightingManager);
+            HighlightingManager.RegisterHighlighting(definitionName, extensions, definition);
+        }
+
+        private async void MenuNewProjectButton_OnClick(object sender, RoutedEventArgs e)
+        {
+            var dialog = new NewProjectDialog {IsModal = true};
+            await this.ShowChildWindowAsync(dialog);
+            
+            //Todo: Ask user if they want to save current project if one is open
+            if(dialog.Result == NewProjectDialogResult.Create)
+              ProjectManager.CreateNewProject(dialog.Path, dialog.ProjectName, dialog.Author, dialog.Description, dialog.Version);
         }
     }
 }
