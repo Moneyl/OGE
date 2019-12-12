@@ -1,4 +1,6 @@
-﻿namespace OGE.Editor.Interfaces
+﻿using System.Xml.Linq;
+
+namespace OGE.Editor.Interfaces
 {
     /// <summary>
     /// Used to help track changes to files for undo/redo,
@@ -15,5 +17,8 @@
         /// Redo the changes made by the action.
         /// </summary>
         void Redo();
+
+        void WriteToProjectFile(XElement changeNode);
+        void ReadFromProjectFile(XElement changeNode);
     }
 }

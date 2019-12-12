@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Xml.Linq;
 using OGE.Editor.Interfaces;
 using OGE.ViewModels.FileExplorer;
 
@@ -27,6 +28,16 @@ namespace OGE.Editor.Actions
         }
 
         void ITrackedAction.Redo()
+        {
+            throw new NotImplementedException();
+        }
+
+        void ITrackedAction.WriteToProjectFile(XElement changesNode)
+        {
+            throw new NotImplementedException();
+        }
+
+        void ITrackedAction.ReadFromProjectFile(XElement changeNode)
         {
             throw new NotImplementedException();
         }
