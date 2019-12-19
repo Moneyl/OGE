@@ -73,6 +73,9 @@ namespace OGE.ViewModels.FileExplorer
                     WorkingDirectory = action.NewWorkingDirectory;
                     ReloadFilesList();
                 });
+            MessageBus.Current.Listen<FileExplorerCollapseAllEventArgs>()
+                .Throttle(TimeSpan.FromMilliseconds(500))
+                .Subscribe(HandleCollapseAllEvent);
         }
 
         public void ReloadFilesList()
@@ -93,6 +96,15 @@ namespace OGE.ViewModels.FileExplorer
         private void TriggerSelectedItemChangedEvent()
         {
             MessageBus.Current.SendMessage(new SelectedItemChangedEventArgs(_selectedItem));
+        }
+
+        private void HandleCollapseAllEvent(FileExplorerCollapseAllEventArgs args)
+        {
+            foreach(var treeItem in FileList)
+            {
+                var explorerItem = (FileExplorerItemViewModel)treeItem;
+                explorerItem.CollapseAll();
+            }
         }
     }
 }

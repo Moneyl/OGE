@@ -9,27 +9,27 @@ namespace OGE.ViewModels.FileExplorer
 {
     public abstract class TreeItem : ReactiveObject
     {
-        private readonly Type _viewModelType;
+        private bool _isExpanded;
+        private bool _isSelected;
+        private TreeItem _parent;
 
-        bool _isExpanded;
         public bool IsExpanded
         {
-            get { return _isExpanded; }
-            set { this.RaiseAndSetIfChanged(ref _isExpanded, value); }
+            get => _isExpanded;
+            set => this.RaiseAndSetIfChanged(ref _isExpanded, value);
         }
 
-        bool _isSelected;
         public bool IsSelected
         {
-            get { return _isSelected; }
-            set { this.RaiseAndSetIfChanged(ref _isSelected, value); }
+            get => _isSelected;
+            set => this.RaiseAndSetIfChanged(ref _isSelected, value);
         }
 
-        private TreeItem _parent;
+        public abstract object ViewModel { get; }
+        public ObservableCollection<TreeItem> Children { get; }
 
         protected TreeItem(IEnumerable<TreeItem> children = null)
         {
-
             Children = new ObservableCollection<TreeItem>();
             if (children == null) return;
             foreach (var child in children)
@@ -38,13 +38,20 @@ namespace OGE.ViewModels.FileExplorer
             }
         }
 
-        public abstract object ViewModel { get; }
-        public ObservableCollection<TreeItem> Children { get; }
-
         public void AddChild(TreeItem child)
         {
             child._parent = this;
             Children.Add(child);
+        }
+
+        public void Expand()
+        {
+            IsExpanded = true;
+        }
+
+        public void Collapse()
+        {
+            IsExpanded = false;
         }
 
         public void ExpandPath()
@@ -52,6 +59,7 @@ namespace OGE.ViewModels.FileExplorer
             IsExpanded = true;
             _parent?.ExpandPath();
         }
+
         public void CollapsePath()
         {
             IsExpanded = false;

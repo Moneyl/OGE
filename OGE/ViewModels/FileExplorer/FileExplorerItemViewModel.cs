@@ -51,6 +51,16 @@ namespace OGE.ViewModels.FileExplorer
             return File != null;
         }
 
+        public void CollapseAll()
+        {
+            foreach (var treeItem in Children)
+            {
+                var child = (FileExplorerItemViewModel)treeItem;
+                child.CollapseAll();
+            }
+            Collapse();
+        }
+
         public void FillChildrenList(string searchTerm)
         {
             if (Depth == 0) //Handle depth 0 packfiles
