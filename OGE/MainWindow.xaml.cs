@@ -94,7 +94,7 @@ namespace OGE
 
                 if (PathHelpers.IsTextExtension(targetItem.FileExtension))
                 {
-                    if (!ProjectManager.TryGetFile(targetItem.Filename, targetItem.Parent, out Stream docStream, true))
+                    if (!ProjectManager.TryGetFile(targetItem.Filename, targetItem.Parent.File, out Stream docStream))
                         return;
 
                     using StreamReader reader = new StreamReader(docStream);
@@ -123,13 +123,18 @@ namespace OGE
                         return;
 
                     //Get gpu filename
-                    if (!PathHelpers.TryGetGpuFileNameFromCpuFile(targetItem.FilePath, out string gpuFileName))
+                    if (!PathHelpers.TryGetGpuFileNameFromCpuFile(targetItem.Filename, out string gpuFileName))
                         return;
+                    //Ensure we have the parent file
+                    if (targetItem.Parent.File == null)
+                        if (!targetItem.Parent.GetCacheFile(true))
+                            return;
+
                     //Get cpu file stream from cache
-                    if (!ProjectManager.TryGetFile(targetItem.Filename, targetItem.Parent, out Stream cpuFileStream, true))
+                    if (!ProjectManager.TryGetFile(targetItem.Filename, targetItem.Parent.File, out Stream cpuFileStream))
                         return;
                     //Get gpu file stream from cache
-                    if(!ProjectManager.TryGetFile(gpuFileName, targetItem.Parent, out Stream gpuFileStream, true))
+                    if(!ProjectManager.TryGetFile(gpuFileName, targetItem.Parent.File, out Stream gpuFileStream))
                         return;
 
                     var pegFile = new PegFile();
@@ -141,7 +146,7 @@ namespace OGE
                     }
                     catch (Exception e)
                     {
-                        WindowLogger.Log($"Failed to load peg file! Filename: \"{targetItem.FilePath}\". Message: \"{e.Message}\"");
+                        WindowLogger.Log($"Failed to load peg file! Filename: \"{targetItem.Filename}\". Message: \"{e.Message}\"");
                         return;
                     }
 

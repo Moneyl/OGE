@@ -78,12 +78,13 @@ namespace OGE.ViewModels.FileExplorer
         public void ReloadFilesList()
         {
             FileList.Clear();
-            
-            //Assuming that any packfile in this list is already confirmed to be a packfile by ProjectManager
-            foreach (var packfile in ProjectManager.WorkingDirectoryPackfiles)
-            {
-                var explorerItem = new FileExplorerItemViewModel(packfile.PackfilePath, null, packfile, true);
 
+            foreach (var cacheFile in ProjectManager.EditorCacheFiles)
+            {
+                if(cacheFile.Depth != 0)
+                    continue;
+
+                var explorerItem = new FileExplorerItemViewModel(cacheFile.Filename, null, 0, cacheFile);
                 explorerItem.FillChildrenList(SearchTerm);
                 FileList.Add(explorerItem);
             }

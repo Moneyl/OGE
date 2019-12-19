@@ -6,6 +6,7 @@ namespace OGE.Editor
     {
         Packfile, //vpp_pc
         Container, //str2_pc
-        Primitive //All others
+        Primitive, //All others
+        None //Value not set
     }
 }

@@ -1,141 +1,96 @@
 ﻿using System.IO;
+using OGE.Editor;
 using OGE.Editor.Managers;
 using OGE.Utility.Helpers;
 using ReactiveUI;
-using RfgTools.Formats.Packfiles;
 
 namespace OGE.ViewModels.FileExplorer
 {
     public class FileExplorerItemViewModel : TreeItem
     {
-        private string _filePath;
+        private string _filename;
 
-        public Packfile Packfile { get; private set; }
+        public CacheFile File { get; private set; }
         public FileExplorerItemViewModel Parent { get; private set; }
-        public string Filename { get; set; }
+        public uint Depth { get; set; } = 0;
         public string FileExtension { get; set; }
-        public bool IsTopLevelPackfile { get; set; } = false;
         public override object ViewModel => this;
         public string Key { get; private set; }
         public bool IsEmbeddedPackfile { get; private set; }
-        public string FilePath
+        public string Filename
         {
-            get => _filePath;
+            get => _filename;
             set
             {
-                _filePath = this.RaiseAndSetIfChanged(ref _filePath, value);
-                Filename = Path.GetFileName(_filePath);
-                FileExtension = Path.GetExtension(_filePath);
+                _filename = this.RaiseAndSetIfChanged(ref _filename, value);
+                FileExtension = Path.GetExtension(_filename);
 
                 //Set Key
-                if (IsTopLevelPackfile || Parent == null)
+                if (Depth == 0 || Parent == null)
                     Key = Filename;
                 else
                     Key = $"{Parent.Filename}--{Filename}";
 
                 //Set IsEmbeddedPackfile
-                IsEmbeddedPackfile = PathHelpers.IsPackfilePath(FilePath) && !IsTopLevelPackfile;
+                IsEmbeddedPackfile = PathHelpers.IsPackfilePath(Filename) && Depth > 0;
             }
         }
 
-        public FileExplorerItemViewModel(string filePath, FileExplorerItemViewModel parent, Packfile packfile = null, bool isTopLevelPackfile = false)
+        public FileExplorerItemViewModel(string filename, FileExplorerItemViewModel parent, uint depth, CacheFile cacheFile = null)
         {
-            Packfile = packfile;
-            IsTopLevelPackfile = isTopLevelPackfile;
+            File = cacheFile;
             Parent = parent;
-            FilePath = filePath;
+            Depth = depth;
+            Filename = filename;
         }
 
-        /// <summary>
-        /// Try to get a sibling file (same parent) with the provided targetFilename.
-        /// </summary>
-        /// <param name="targetFilename">The file to find.</param>
-        /// <param name="target">The target if it's found, or null.</param>
-        /// <returns>True if target found, false if not.</returns>
-        public bool TryGetSiblingItem(string targetFilename, out FileExplorerItemViewModel target)
+        public bool GetCacheFile(bool extractIfNotFound = false)
         {
-            target = null;
-            if (Parent == null)
-                return false;
-
-            foreach (var sibling in Parent.Children)
-            {
-                var siblingCast = (FileExplorerItemViewModel)sibling;
-                if (siblingCast.Filename == targetFilename)
-                {
-                    target = siblingCast;
-                    return true;
-                }
-            }
-            return false;
+            ProjectManager.TryGetCacheFile(Filename, Parent?.Filename, out CacheFile file, extractIfNotFound);
+            File = file;
+            return File != null;
         }
 
         public void FillChildrenList(string searchTerm)
         {
-            //Handle internal packfiles
-            if (Packfile == null)
+            if (Depth == 0) //Handle depth 0 packfiles
             {
-                //Need to read data about self and subfiles from parent
-                if(Parent == null)
-                    return;
-                //Ignore non packfiles
-                if (!PathHelpers.IsPackfilePath(FilePath)) 
+                if(File?.PackfileData == null)
                     return;
 
-                //Try to see if it's in the cache
-                if (ProjectManager.IsFileCached(FilePath, Path.GetFileName(Parent.FilePath)))
+                foreach (var subFile in File.PackfileData.Filenames)
                 {
-                    string packfilePath = $"{ProjectManager.GlobalCachePath}{Path.GetFileName(Parent.FilePath)}\\{FilePath}";
-                    Packfile = new Packfile(false);
-                    Packfile.ReadMetadata(packfilePath);
+                    if(!subFile.Contains(searchTerm))
+                        continue;
 
-                    foreach (var subfile in Packfile.DirectoryEntries)
-                    {
-                        if(!subfile.FileName.Contains(searchTerm))
-                            continue;
-
-                        var explorerItem = new FileExplorerItemViewModel(subfile.FileName, this);
-                        AddChild(explorerItem);
-                    }
-                }
-                else //If not in cache, get subfiles list from asm_pc files in parent.
-                {
-                    if(Parent.Packfile == null)
-                        return;
-
-                    //Containers don't have extension in asm_pc files, so strip extension for comparisons
-                    string filenameNoExtension = Path.GetFileNameWithoutExtension(FilePath);
-                    foreach (var asmFile in Parent.Packfile.AsmFiles)
-                    {
-                        foreach (var container in asmFile.Containers)
-                        {
-                            if (container.Name != filenameNoExtension)
-                                continue;
-
-                            foreach (var primitive in container.Primitives)
-                            {
-                                if (!primitive.Name.Contains(searchTerm))
-                                    continue;
-
-                                var explorerItem = new FileExplorerItemViewModel(primitive.Name, this);
-                                AddChild(explorerItem);
-                            }
-                        }
-                    }
-                }
-            }
-            else //Handle top level packfiles
-            {
-                foreach (var filename in Packfile.Filenames)
-                {
-                    //Don't show non packfiles that don't fit the search term
-                    if (!PathHelpers.IsPackfilePath(filename))
-                        if(!filename.Contains(searchTerm))
-                            continue;
-
-                    var explorerItem = new FileExplorerItemViewModel(filename, this);
+                    var explorerItem = new FileExplorerItemViewModel(subFile, this, Depth + 1);
                     explorerItem.FillChildrenList(searchTerm);
                     AddChild(explorerItem);
+                }
+            }
+            else //Handle depth > 0 packfiles
+            {
+                if (!IsEmbeddedPackfile || Parent == null)
+                    return;
+
+                //Check parent for asm file, get children files. Cheaper than extracting/finding and parsing
+                string filenameNoExtension = Path.GetFileNameWithoutExtension(Filename);
+                foreach (var asmFile in Parent.File.PackfileData.AsmFiles)
+                {
+                    foreach (var container in asmFile.Containers)
+                    {
+                        if(container.Name != filenameNoExtension)
+                            continue;
+
+                        foreach (var primitive in container.Primitives)
+                        {
+                            if(!primitive.Name.Contains(searchTerm))
+                                continue;
+
+                            var explorerItem = new FileExplorerItemViewModel(primitive.Name, this, Depth + 1);
+                            AddChild(explorerItem);
+                        }
+                    }
                 }
             }
         }

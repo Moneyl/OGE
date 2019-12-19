@@ -1,5 +1,8 @@
 ﻿using System.IO;
 using OGE.Editor.Managers;
+using RfgTools.Formats.Asm;
+using RfgTools.Formats.Packfiles;
+using RfgTools.Formats.Textures;
 
 namespace OGE.Editor
 {
@@ -8,17 +11,45 @@ namespace OGE.Editor
         private Stream _fileStream = Stream.Null;
 
         public string Filename { get; private set; }
-        public string ParentFile { get; private set; }
+        public string FilePath { get; set; }
+        public string CachePath { get; set; }
+        public string ParentName { get; private set; }
+        public CacheFile Parent { get; set; } = null;
         public bool IsOpen { get; private set; } = false;
-        public RfgFileTypes FileType { get; private set; }
-        public bool InEditorCache { get; private set; } = false;
-        public bool InProjectCache { get; private set; } = false;
+        public RfgFileTypes FileType { get; set; } = RfgFileTypes.None;
+        public bool InEditorCache { get; set; } = false;
+        public bool InProjectCache { get; set; } = false;
+        public uint Depth { get; set; } = 0;
 
-        public CacheFile(string filename, string parentFile)
+        public Packfile PackfileData = null;
+        public PegFile PegData = null;
+        public AsmFile AsmData = null;
+
+        public string Key
+        {
+            get
+            {
+                //Special key syntax for embedded packfiles
+                if (Parent != null && Depth > 0 && CanHaveSubfiles())
+                    return $"{Parent.Filename}--{Filename}";
+                
+                //Key for all other files is just their filename
+                return Filename;
+            }
+        }
+
+        public CacheFile(string filename, string parentName, string cachePath, string filePath = null)
         {
             Filename = filename;
-            ParentFile = parentFile;
+            ParentName = parentName;
+            CachePath = cachePath;
+            FilePath = filePath ?? $"{CachePath}{ParentName}\\{Filename}";
             UpdateFileType();
+        }
+
+        public bool CanHaveSubfiles()
+        {
+            return FileType == RfgFileTypes.Packfile || FileType == RfgFileTypes.Container;
         }
 
         private void UpdateFileType()
@@ -32,18 +63,36 @@ namespace OGE.Editor
             };
         }
 
-        public bool FileExists(string parentFolderPathOverride = null)
+        public void ReadFormatData()
         {
-            string filePath = parentFolderPathOverride == null 
-                ? $"{ProjectManager.GlobalCachePath}{ParentFile}\\{Filename}" 
-                : $"{parentFolderPathOverride}\\{Filename}";
-
-            return File.Exists(filePath);
+            switch (FileType)
+            {
+                case RfgFileTypes.None:
+                    return;
+                case RfgFileTypes.Packfile:
+                    PackfileData = new Packfile(false);
+                    PackfileData.ReadMetadata(FilePath);
+                    PackfileData.ParseAsmFiles($"{CachePath}{Filename}\\");
+                    break;
+                case RfgFileTypes.Container:
+                    PackfileData = new Packfile(false);
+                    PackfileData.ReadMetadata(FilePath);
+                    break;
+                case RfgFileTypes.Primitive:
+                    //Todo: Add checks for primitive type, and primitive handling code
+                    break;
+            }
         }
 
-        public bool TryOpenOrGet(out Stream stream, string parentFolderPathOverride = null)
+        public bool FileExists(string parentFolderPathOverride = null)
         {
-            if (IsOpen || TryOpenFile(parentFolderPathOverride))
+            string filePath = $"{CachePath}\\{Key}\\{Filename}";
+            return File.Exists(FilePath ?? filePath);
+        }
+
+        public bool TryOpenOrGet(out Stream stream)
+        {
+            if (IsOpen || TryOpenFile())
             {
                 stream = _fileStream;
                 return true;
@@ -53,15 +102,12 @@ namespace OGE.Editor
             return false;
         }
 
-        private bool TryOpenFile(string parentFolderPathOverride = null)
+        private bool TryOpenFile()
         {
             _fileStream.Close();
             _fileStream = Stream.Null;
-            string filePath = parentFolderPathOverride == null 
-                ? $"{ProjectManager.GlobalCachePath}{ParentFile}\\{Filename}"
-                : $"{parentFolderPathOverride}\\{Filename}";
+            string filePath = FilePath ?? $"{CachePath}\\{Key}\\{Filename}";
 
-            //Todo: Check project cache first once those are added
             //Check if file exists in EditorCache
             if (!File.Exists(filePath))
                 return false;

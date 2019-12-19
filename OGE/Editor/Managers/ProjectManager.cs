@@ -1,7 +1,5 @@
 using System.Collections.Generic;
 using System.IO;
-using OGE.ViewModels.FileExplorer;
-using RfgTools.Formats.Packfiles;
 
 namespace OGE.Editor.Managers
 {
@@ -10,8 +8,9 @@ namespace OGE.Editor.Managers
     public static class ProjectManager
     {
         private static CacheManager _cache;
+
+        public static IReadOnlyList<CacheFile> EditorCacheFiles => _cache.CacheFiles;
         public static string GlobalCachePath { get; } = @".\EditorCache\";
-        public static IReadOnlyList<Packfile> WorkingDirectoryPackfiles => _cache.WorkingDirectoryPackfiles;
         public static string WorkingDirectory
         {
             get => _cache.WorkingDirectory;
@@ -30,14 +29,24 @@ namespace OGE.Editor.Managers
             WorkingDirectory = initialWorkingDirectory;
         }
 
-        public static bool TryGetFile(string targetFilename, FileExplorerItemViewModel parent, out Stream stream, bool extractIfNotCached = false)
+        public static bool TryGetCacheFile(string targetName, string parentName, out CacheFile target, bool extractIfNotCached = false)
         {
-            return _cache.TryGetFile(targetFilename, parent, out stream, extractIfNotCached);
+            return _cache.TryGetCacheFile(targetName, parentName, out target, extractIfNotCached);
         }
 
-        public static bool IsFileCached(string filename, string parentKey, string parentFolderPathOverride = null)
+        public static bool TryGetFile(string targetFilename, string parentName, out Stream stream)
         {
-            return _cache.IsFileCached(filename, parentKey, parentFolderPathOverride);
+            return _cache.TryGetFile(targetFilename, parentName, out stream);
+        }
+
+        public static bool TryGetFile(string targetFilename, CacheFile parent, out Stream stream)
+        {
+            return _cache.TryGetFile(targetFilename, parent, out stream);
+        }
+
+        public static bool IsFileCached(string targetName, string parentName)
+        {
+            return _cache.IsFileCached(targetName, parentName);
         }
 
         public static void OpenProject(string projectFilePath)

@@ -33,7 +33,7 @@ namespace OGE.Views
         //Todo: Change to support multiple file types (peg, packfile, zone file, etc)
         private void GenerateDataView(FileExplorerItemViewModel selectedItem)
         {
-            var packfile = selectedItem.Packfile;
+            var packfile = selectedItem.File?.PackfileData;
             if (packfile == null)
             {
                 GenerateNullData(selectedItem);

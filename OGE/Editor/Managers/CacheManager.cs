@@ -1,35 +1,30 @@
-
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using OGE.Utility;
 using OGE.Utility.Helpers;
-using OGE.ViewModels.FileExplorer;
-using RfgTools.Formats.Packfiles;
 
 namespace OGE.Editor.Managers
 {
     public class CacheManager
     {
         private string _workingDirectory;
-        private Dictionary<string, List<CacheFile>> _files = new Dictionary<string, List<CacheFile>>();
-        private List<Packfile> _workingDirectoryPackfiles = new List<Packfile>(); //Depth 0 packfiles
-        //Key is the parent file name, value is the packfile info. These are depth > 0 packfiles
-        private Dictionary<string, Packfile> _embeddedPackfiles = new Dictionary<string, Packfile>();
+        private List<CacheFile> _cacheFiles = new List<CacheFile>();
 
-        //Todo: Maybe have subfolders for different working directories in EditorCache
-        private string CachePath { get; }
-        public IReadOnlyList<Packfile> WorkingDirectoryPackfiles => _workingDirectoryPackfiles;
+        public IReadOnlyList<CacheFile> CacheFiles => _cacheFiles.AsReadOnly();
         public string WorkingDirectory
         {
             get => _workingDirectory;
             set
             {
+                if(string.IsNullOrEmpty(value))
+                    return;
+
                 _workingDirectory = value;
                 UpdateWorkingDirectoryData();
             }
         }
+        private string CachePath { get; }
 
         public CacheManager(string cachePath)
         {
@@ -40,177 +35,279 @@ namespace OGE.Editor.Managers
 
         private void UpdateWorkingDirectoryData()
         {
-            if(!Directory.Exists(_workingDirectory))
-                return;
-
             Directory.CreateDirectory(_workingDirectory);
-            _workingDirectoryPackfiles.Clear();
-            var directoryFiles = Directory.GetFiles(WorkingDirectory);
 
+            var directoryFiles = Directory.GetFiles(WorkingDirectory);
             foreach (var filePath in directoryFiles)
             {
                 if (!PathHelpers.IsPackfilePath(filePath))
                     continue;
 
-                var packfile = new Packfile(false);
-                packfile.ReadMetadata(filePath);
-                packfile.ParseAsmFiles($"{CachePath}{packfile.Filename}\\");
-
-                _workingDirectoryPackfiles.Add(packfile);
+                //Try to find file in cache, add if not visible.
+                string filename = Path.GetFileName(filePath);
+                if (TryGetCacheFile(filename, null, out var target))
+                {
+                    //Found in cache, update FilePath and read format data
+                    target.FilePath = filePath;
+                    target.ReadFormatData();
+                }
+                else
+                {
+                    //Else, add to cache and read format data
+                    var cacheFile = new CacheFile(filename, null, CachePath, filePath)
+                    {
+                        Depth = 0, FileType = RfgFileTypes.Packfile
+                    };
+                    cacheFile.ReadFormatData();
+                    _cacheFiles.Add(cacheFile);
+                }
             }
+
+            //Sort alphabetically for easier file explorer navigation
+            _cacheFiles.Sort((file1, file2) => string.Compare(file1.Filename, file2.Filename, StringComparison.Ordinal));
         }
 
-        public void ScanEditorCache()
+        private void ScanEditorCache()
         {
             if (!Directory.Exists(CachePath))
                 Directory.CreateDirectory(CachePath);
 
             var cacheFolders = Directory.GetDirectories(CachePath);
+            //First check depth 0 packfiles cached children
             foreach (var cacheFolder in cacheFolders)
             {
                 string parentFileName = Path.GetFileName(cacheFolder);
                 var files = Directory.GetFiles(cacheFolder);
+                if (IsEmbeddedPackfileKey(parentFileName))
+                    continue;
+                if(files.Length <= 0)
+                    continue;
+
+                var parentFile = new CacheFile(parentFileName, null, CachePath)
+                {
+                    FileType = RfgFileTypes.Packfile, Depth = 0
+                };
+                _cacheFiles.Add(parentFile);
+
+                //Read folder sub-files, add to cache
+                foreach (var filePath in files)
+                {
+                    var cacheFile = new CacheFile(Path.GetFileName(filePath), parentFile.Filename, CachePath, filePath)
+                    {
+                        FileType = PathHelpers.IsPackfilePath(filePath) ? RfgFileTypes.Container : RfgFileTypes.Primitive,
+                        Depth = 1,
+                        Parent = parentFile
+                    };
+                    _cacheFiles.Add(cacheFile);
+
+                    if (cacheFile.CanHaveSubfiles()) 
+                        cacheFile.ReadFormatData();
+                }
+            }
+
+            //Then check depth 1 packfiles, have "--" in key. In other words IsEmbeddedPackfileKey() == true
+            foreach (var cacheFolder in cacheFolders)
+            {
+                string embeddedFileKey = Path.GetFileName(cacheFolder);
+                var files = Directory.GetFiles(cacheFolder);
+                if (!IsEmbeddedPackfileKey(embeddedFileKey))
+                    continue;
+                if (!TrySplitEmbeddedPackfileKey(embeddedFileKey, out string parentName, out string childName))
+                    continue;
                 if (files.Length <= 0)
                     continue;
 
-                _files[parentFileName] = new List<CacheFile>();
-                var fileList = _files[parentFileName];
-                foreach (var file in files)
+                //Try to find parent
+                if(!TryGetCacheFile(childName, parentName, out CacheFile parentFile))
+                    continue;
+
+                string filePath = $"{CachePath}\\{parentName}\\{childName}";
+                var cacheFile = new CacheFile(childName, parentName, CachePath, filePath)
                 {
-                    fileList.Add(new CacheFile(Path.GetFileName(file), parentFileName));
+                    FileType = RfgFileTypes.Container, Depth = 1, Parent = parentFile
+                };
+                _cacheFiles.Add(cacheFile);
+
+                //Read folder sub-files, add to cache
+                foreach (var subFilePath in files)
+                {
+                    _cacheFiles.Add(new CacheFile(Path.GetFileName(subFilePath), cacheFile.Filename, CachePath, subFilePath)
+                    {
+                        FileType = RfgFileTypes.Primitive,
+                        Depth = 2
+                    });
                 }
             }
         }
 
-        public bool TryGetFile(string targetFilename, FileExplorerItemViewModel parent, out Stream stream, bool extractIfNotCached = false)
+        public bool TryGetFile(string targetName, string parentName, out Stream stream)
         {
             stream = Stream.Null;
-            string parentFolderPathOverride = $"{CachePath}{parent.Key}\\";
+            //Try to get parent CacheFile
+            if (!TryGetCacheFile(parentName, null, out CacheFile parent))
+                return false;
 
-            //Handle depth 1 files (direct subfile of working dir packfile)
-            if (parent.IsTopLevelPackfile) 
-            {
-                //Extract target file from parent
-                if (ExtractFileIfNotCached(targetFilename, parent))
-                    stream = GetCachedFileStream(targetFilename, parent.Filename);
+            //Call main function
+            return TryGetFile(targetName, parent, out stream);
+        }
 
-                return stream != Stream.Null;
-            }
-            //Handle uncached depth > 1 files
-            if (!IsFileCached(targetFilename, parent.Key, parentFolderPathOverride)) 
-            {
-                //If parent isn't top level pack file, must first extract parent from it's parent (parent.Parent)
-                if (parent.Parent == null)
-                    return false;
-
-                //Ensure parent is extracted from it's parent
+        public bool TryGetFile(string targetFilename, CacheFile parent, out Stream stream)
+        {
+            //Ensure parent is extracted
+            if(parent.Depth > 0)
                 ExtractFileIfNotCached(parent.Filename, parent.Parent);
 
-                //Try to extract target file from parent
-                if (!ExtractFileIfNotCached(targetFilename, parent))
-                    return false;
-            }
+            //Extract target
+            ExtractFileIfNotCached(targetFilename, parent);
+            stream = GetCachedFileStream(targetFilename, parent.Filename);
 
-            stream = GetCachedFileStream(targetFilename, parent.Key, parentFolderPathOverride);
             return stream != Stream.Null;
         }
 
         /// <summary>
-        /// Extracts a one level deep file from it's parent.
-        /// Does not work for files that are more than one level deep!
+        /// Extracts a file from it's parent.
+        /// Parent should already be extracted when this is called.
         /// </summary>
         /// <param name="targetFilename">The name of the target file to be extracted.</param>
-        /// <param name="parent">The parent file.</param>
-        /// <returns>Returns a bool that is true if it was successful and false otherwise.</returns>
-        public bool ExtractFileIfNotCached(string targetFilename, FileExplorerItemViewModel parent)
+        /// <param name="parent">The parent CacheFile.</param>
+        /// <returns>Returns if the file was successfully extracted.</returns>
+        private bool ExtractFileIfNotCached(string targetFilename, CacheFile parent)
         {
-            string parentFolderPathOverride = !parent.IsTopLevelPackfile
-                ? $"{CachePath}{parent.Key}\\"
-                : null;
-
             //If file isn't cached, extract and return success value of that
-            return IsFileCached(targetFilename, parent.Key) || ExtractAndCacheFile(targetFilename, parent);
+            return IsFileCached(targetFilename, parent.Filename) || ExtractAndCacheFile(targetFilename, parent);
         }
 
-        public bool IsFileCached(string filename, string parentKey, string parentFolderPathOverride = null)
+        public bool IsFileCached(string targetName, string parentName = null)
         {
-            if (_files.TryGetValue(parentKey, out List<CacheFile> files))
+            foreach (var cacheFile in _cacheFiles)
             {
-                foreach (var subFile in files)
-                {
-                    if (!string.Equals(subFile.Filename, filename, StringComparison.CurrentCultureIgnoreCase))
-                        continue;
-                    if (!subFile.FileExists(parentFolderPathOverride))
-                        break;
+                if (!string.Equals(cacheFile.Filename, targetName, StringComparison.CurrentCultureIgnoreCase))
+                    continue;
+                if (!string.Equals(cacheFile.ParentName, parentName, StringComparison.CurrentCultureIgnoreCase))
+                    continue;
 
-                    return true;
-                }
+                return true;
             }
             return false;
         }
 
-        private Stream GetCachedFileStream(string filename, string parentKey, string parentFolderPathOverride = null)
+        private Stream GetCachedFileStream(string targetName, string parentName)
         {
-            if (_files.TryGetValue(parentKey, out List<CacheFile> files))
+            foreach (var cacheFile in _cacheFiles)
             {
-                foreach (var subFile in files)
-                {
-                    if (!string.Equals(subFile.Filename, filename, StringComparison.CurrentCultureIgnoreCase))
-                        continue;
-                    if (!subFile.TryOpenOrGet(out Stream fileStream, parentFolderPathOverride))
-                        break;
+                if (!string.Equals(cacheFile.Filename, targetName, StringComparison.CurrentCultureIgnoreCase))
+                    continue;
+                if (!string.Equals(cacheFile.ParentName, parentName, StringComparison.CurrentCultureIgnoreCase))
+                    continue;
+                if (!cacheFile.TryOpenOrGet(out Stream fileStream))
+                    break;
 
-                    return fileStream;
-                }
+                return fileStream;
             }
             return Stream.Null;
         }
 
-        //Todo: Make this support files that are two layers deep
-        public bool ExtractAndCacheFile(string targetFilename, FileExplorerItemViewModel parent)
+        public bool TryGetCacheFile(string targetName, string parentName, out CacheFile target, bool extractIfNotCached = false)
         {
-            if (parent.IsEmbeddedPackfile && parent.Parent == null)
+            target = null;
+            CacheFile parent = null;
+
+            foreach (var cacheFile in _cacheFiles)
+            {
+                //Find parent in cases where no files with the target parent exist yet
+                if(string.Equals(cacheFile.Filename, parentName, StringComparison.CurrentCultureIgnoreCase))
+                    if (parent == null)
+                        parent = cacheFile;
+                //Match parent and target name to existing CacheFiles
+                if (!string.Equals(cacheFile.ParentName, parentName, StringComparison.CurrentCultureIgnoreCase))
+                    continue;
+                if (!string.Equals(cacheFile.Filename, targetName, StringComparison.CurrentCultureIgnoreCase))
+                    continue;
+
+                //Set target and fix it's parent value if necessary
+                target = cacheFile;
+                if (target.Parent == null)
+                    target.Parent = parent;
+
+                return true;
+            }
+
+            if (extractIfNotCached && parent != null && ExtractAndCacheFile(targetName, parent))
+                return TryGetCacheFile(targetName, parentName, out target);
+
+            return false;
+        }
+
+        private bool ExtractAndCacheFile(string targetFilename, CacheFile parent)
+        {
+            var packfile = parent?.PackfileData;
+            if (packfile == null)
                 return false;
 
+            CacheFile targetFile = null;
             //Form output paths
             string packfileOutputPath = $"{CachePath}{parent.Key}\\";
             string targetOutputPath = $"{packfileOutputPath}\\{targetFilename}";
             //Ensure output directory exists
             Directory.CreateDirectory(packfileOutputPath);
-            //Get parent subfiles list, create if it doesn't exist.
-            var fileRefs = _files.GetOrCreate(parent.Key);
-            //Get parent packfile
-            var packfile = parent.IsEmbeddedPackfile
-                ? _embeddedPackfiles.First(item => item.Value.Filename == parent.Filename).Value
-                : _workingDirectoryPackfiles.First(item => item.Filename == parent.Filename);
 
+            //First try to extract single file
             if (packfile.TryExtractSingleFile(targetFilename, targetOutputPath))
             {
-                fileRefs.Add(new CacheFile(targetFilename, parent.Filename));
+                targetFile = new CacheFile(targetFilename, parent.Filename, CachePath, targetOutputPath)
+                {
+                    FileType = PathHelpers.IsPackfilePath(targetOutputPath) ? RfgFileTypes.Container : RfgFileTypes.Primitive,
+                    Parent = parent, Depth = parent.Depth + 1
+                };
+                _cacheFiles.Add(targetFile);
             }
-            else
+            else //If that fails, extract all files from parent
             {
-                //Failed to extract single file, so extract whole vpp
-                //Todo: Ask user if they want to extract the whole vpp
                 WindowLogger.Log($"Failed to extract single file \"{targetFilename}\" from \"{parent.FilePath}\". Extracting entire packfile.");
                 packfile.ExtractFileData(packfileOutputPath);
                 foreach (var subfileName in packfile.Filenames)
                 {
-                    fileRefs.Add(new CacheFile(subfileName, parent.Filename));
+                    var cacheFile = new CacheFile(subfileName, parent.Filename, CachePath, $"{packfileOutputPath}\\{subfileName}")
+                    {
+                        FileType = PathHelpers.IsPackfilePath(targetOutputPath) ? RfgFileTypes.Container : RfgFileTypes.Primitive,
+                        Parent = parent, Depth = parent.Depth + 1
+                    };
+                    _cacheFiles.Add(cacheFile);
+
+                    if (cacheFile.Filename == targetFilename)
+                        targetFile = cacheFile;
                 }
             }
 
-            if (PathHelpers.IsPackfilePath(targetFilename))
+            if (targetFile == null)
+                return false;
+            if (targetFile.CanHaveSubfiles())
             {
-                string targetKey = $"{parent.Filename}--{targetFilename}";
-                string targetCache = $"{CachePath}{targetKey}\\";
-                Directory.CreateDirectory(targetCache);
-
-                var targetPackfile = new Packfile(false);
-                targetPackfile.ReadMetadata(targetOutputPath);
-                targetPackfile.ParseAsmFiles(targetCache);
-                _embeddedPackfiles[targetKey] = targetPackfile;
+                Directory.CreateDirectory($"{CachePath}{targetFile.Key}\\");
+                targetFile.ReadFormatData();
             }
+            return true;
+        }
+
+        private bool IsEmbeddedPackfileKey(string key)
+        {
+            return key.Contains("--");
+        }
+
+        private bool TrySplitEmbeddedPackfileKey(string key, out string parentName, out string childName)
+        {
+            parentName = null;
+            childName = null;
+
+            if (!IsEmbeddedPackfileKey(key))
+                return false;
+
+            var result = key.Split("--");
+            if (result.Length > 2)
+                return false;
+
+            parentName = result[0];
+            childName = result[1];
             return true;
         }
     }

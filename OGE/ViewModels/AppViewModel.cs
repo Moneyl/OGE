@@ -1,7 +1,6 @@
 ﻿using System.Reactive;
 using System.Windows.Forms;
 using OGE.Editor.Managers;
-using OGE.Views.Dialogs;
 using ReactiveUI;
 
 namespace OGE.ViewModels
