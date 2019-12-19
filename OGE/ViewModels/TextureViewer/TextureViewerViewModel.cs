@@ -17,10 +17,6 @@ namespace OGE.ViewModels.TextureViewer
         private TextureEntryViewModel _selectedItem;
         private FolderBrowserDialog _openFolderDialog = new FolderBrowserDialog();
 
-        public string CpuFilePath { get; private set; }
-        public string GpuFilePath { get; private set; }
-        public string CpuFileName { get; private set; }
-        public string GpuFileName { get; private set; }
         public PegFile Peg
         {
             get => _peg;

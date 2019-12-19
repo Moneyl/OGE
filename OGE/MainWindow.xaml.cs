@@ -78,11 +78,7 @@ namespace OGE
 
         private void MenuExit_OnClick(object sender, RoutedEventArgs e)
         {
-#if DEBUG
-            var debug = 2; //Set breakpoint here for easy debugging
-#else
             Close();
-#endif
         }
 
         private void HandleOpenFileEvent(OpenFileEventArgs args)

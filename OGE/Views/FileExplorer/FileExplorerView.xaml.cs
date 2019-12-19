@@ -10,9 +10,6 @@ namespace OGE.Views.FileExplorer
 {
     public partial class FileExplorerView : ReactiveUserControl<FileExplorerViewModel>
     {
-        private Stopwatch _searchChangedTimer = new Stopwatch();
-        private long _minSearchUpdateTimer = 500; //Time in ms since the last file explorer list update
-
         public FileExplorerView()
         {
             InitializeComponent();
