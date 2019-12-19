@@ -265,9 +265,9 @@ namespace OGE.Editor.Managers
             {
                 WindowLogger.Log($"Failed to extract single file \"{targetFilename}\" from \"{parent.FilePath}\". Extracting entire packfile.");
                 packfile.ExtractFileData(packfileOutputPath);
-                foreach (var subfileName in packfile.Filenames)
+                foreach (var subfile in packfile.DirectoryEntries)
                 {
-                    var cacheFile = new CacheFile(subfileName, parent.Filename, CachePath, $"{packfileOutputPath}\\{subfileName}")
+                    var cacheFile = new CacheFile(subfile.FileName, parent.Filename, CachePath, $"{packfileOutputPath}\\{subfile.FileName}")
                     {
                         FileType = PathHelpers.IsPackfilePath(targetOutputPath) ? RfgFileTypes.Container : RfgFileTypes.Primitive,
                         Parent = parent, Depth = parent.Depth + 1

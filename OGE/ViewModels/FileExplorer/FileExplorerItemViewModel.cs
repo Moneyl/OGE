@@ -58,12 +58,12 @@ namespace OGE.ViewModels.FileExplorer
                 if(File?.PackfileData == null)
                     return;
 
-                foreach (var subFile in File.PackfileData.Filenames)
+                foreach (var subFile in File.PackfileData.DirectoryEntries)
                 {
-                    if(!subFile.Contains(searchTerm))
+                    if(!subFile.FileName.Contains(searchTerm))
                         continue;
 
-                    var explorerItem = new FileExplorerItemViewModel(subFile, this, Depth + 1);
+                    var explorerItem = new FileExplorerItemViewModel(subFile.FileName, this, Depth + 1);
                     explorerItem.FillChildrenList(searchTerm);
                     AddChild(explorerItem);
                 }

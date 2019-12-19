@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using OGE.Editor.Managers;
 using RfgTools.Formats.Asm;
 using RfgTools.Formats.Packfiles;
@@ -72,6 +73,7 @@ namespace OGE.Editor
                 case RfgFileTypes.Packfile:
                     PackfileData = new Packfile(false);
                     PackfileData.ReadMetadata(FilePath);
+                    PackfileData.DirectoryEntries.Sort((entry1, entry2) => string.Compare(entry1.FileName, entry2.FileName, StringComparison.Ordinal));
                     PackfileData.ParseAsmFiles($"{CachePath}{Filename}\\");
                     break;
                 case RfgFileTypes.Container:
