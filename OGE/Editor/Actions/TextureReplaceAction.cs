@@ -32,7 +32,7 @@ namespace OGE.Editor.Actions
             throw new NotImplementedException();
         }
 
-        void ITrackedAction.WriteToProjectFile(XElement changesNode)
+        void ITrackedAction.WriteToProjectFile(XElement changeNode)
         {
             throw new NotImplementedException();
         }

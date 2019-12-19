@@ -17,8 +17,17 @@ namespace OGE.Editor.Interfaces
         /// Redo the changes made by the action.
         /// </summary>
         void Redo();
-
+        /// <summary>
+        /// Write the changes and any data needed by them
+        /// to the project file.
+        /// </summary>
+        /// <param name="changeNode">The xml node containing the change data</param>
         void WriteToProjectFile(XElement changeNode);
+        /// <summary>
+        /// Read the changes and any data needed by them
+        /// to the project file.
+        /// </summary>
+        /// <param name="changeNode">The xml node containing the change data</param>
         void ReadFromProjectFile(XElement changeNode);
     }
 }
