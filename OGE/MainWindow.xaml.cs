@@ -87,6 +87,13 @@ namespace OGE
             Application.Current.Dispatcher?.Invoke(() =>
             {
                 var targetItem = args.TargetItem;
+                //Ensure we have the parent file
+                if (targetItem.Parent.File == null)
+                    if (!targetItem.Parent.GetCacheFile(true))
+                    {
+                        WindowLogger.Log($"Failed to open file! Filename: \"{targetItem.Filename}\". Could not cache or find it's parent.");
+                        return;
+                    }
 
                 if (PathHelpers.IsTextExtension(targetItem.FileExtension))
                 {
@@ -121,11 +128,6 @@ namespace OGE
                     //Get gpu filename
                     if (!PathHelpers.TryGetGpuFileNameFromCpuFile(targetItem.Filename, out string gpuFileName))
                         return;
-                    //Ensure we have the parent file
-                    if (targetItem.Parent.File == null)
-                        if (!targetItem.Parent.GetCacheFile(true))
-                            return;
-
                     //Get cpu file stream from cache
                     if (!ProjectManager.TryGetFile(targetItem.Filename, targetItem.Parent.File, out Stream cpuFileStream))
                         return;
