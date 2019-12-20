@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Reactive.Disposables;
 using System.Windows;
 using System.Windows.Media;
@@ -21,10 +21,10 @@ namespace OGE.Views.TextureViewer
 
         }
 
-        public TextureViewerView(PegFile peg)
+        public TextureViewerView(CacheFile file)
         {
             InitializeComponent();
-            ViewModel = new TextureViewerViewModel(peg);
+            ViewModel = new TextureViewerViewModel(file);
             _checkeredImageBrush = (ImageBrush)ImageViewBorder.Background; //Save checkered background for toggling between dark background
 
             //Set initial checkbox value to global setting and update.

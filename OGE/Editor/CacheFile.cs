@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using OGE.Editor.Managers;
+using OGE.Utility.Helpers;
 using RfgTools.Formats.Asm;
 using RfgTools.Formats.Packfiles;
 using RfgTools.Formats.Textures;
@@ -81,6 +82,23 @@ namespace OGE.Editor
                     PackfileData.ReadMetadata(FilePath);
                     break;
                 case RfgFileTypes.Primitive:
+                    string extension = Path.GetExtension(Filename);
+                    if (extension == ".cpeg_pc" || extension == ".cvbm_pc")
+                    {
+                        if(!PathHelpers.TryGetGpuFileNameFromCpuFile(FilePath, out string gpuFileName))
+                            return;
+
+                        string basePath = Path.GetDirectoryName(FilePath);
+                        string gpuFilePath = $"{basePath}\\{gpuFileName}";
+
+                        //Todo: Change this to check editor or project cache depending on CacheFile location
+                        //Ensure gpu file is extracted
+                        if(!ProjectManager.TryGetCacheFile(gpuFileName, ParentName, out _, true))
+                            return;
+
+                        PegData = new PegFile();
+                        PegData.Read(FilePath, gpuFilePath);
+                    }
                     //Todo: Add checks for primitive type, and primitive handling code
                     break;
             }

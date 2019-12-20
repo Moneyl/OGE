@@ -125,22 +125,14 @@ namespace OGE
                     if (targetItem.Parent == null)
                         return;
 
-                    //Get gpu filename
-                    if (!PathHelpers.TryGetGpuFileNameFromCpuFile(targetItem.Filename, out string gpuFileName))
-                        return;
-                    //Get cpu file stream from cache
-                    if (!ProjectManager.TryGetFile(targetItem.Filename, targetItem.Parent.File, out Stream cpuFileStream))
-                        return;
-                    //Get gpu file stream from cache
-                    if(!ProjectManager.TryGetFile(gpuFileName, targetItem.Parent.File, out Stream gpuFileStream))
-                        return;
-
-                    var pegFile = new PegFile();
                     try
                     {
-                        pegFile.Read(cpuFileStream, gpuFileStream);
-                        cpuFileStream.Close();
-                        gpuFileStream.Close();
+                        //Ensure we have the targets CacheFile and that the peg data has been read
+                        if (targetItem.File == null)
+                            if (!targetItem.GetCacheFile(true, true))
+                                return;
+                        if (targetItem.File.PegData == null)
+                            targetItem.File.ReadFormatData();
                     }
                     catch (Exception e)
                     {
@@ -151,7 +143,7 @@ namespace OGE
                     var document = new LayoutDocument
                     {
                         Title = args.TargetItem.Filename,
-                        Content = new TextureViewerView(pegFile)
+                        Content = new TextureViewerView(targetItem.File)
                     };
                     DocumentPane.Children.Add(document);
                     DocumentPane.SelectedContentIndex = DocumentPane.ChildrenCount - 1;

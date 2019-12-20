@@ -1,4 +1,4 @@
-using System.IO;
+﻿using System.IO;
 using OGE.Editor;
 using OGE.Editor.Managers;
 using OGE.Utility.Helpers;
@@ -44,11 +44,16 @@ namespace OGE.ViewModels.FileExplorer
             Filename = filename;
         }
 
-        public bool GetCacheFile(bool extractIfNotFound = false)
+        public bool GetCacheFile(bool extractIfNotFound = false, bool readFormatData = false)
         {
-            ProjectManager.TryGetCacheFile(Filename, Parent?.Filename, out CacheFile file, extractIfNotFound);
+            if (!ProjectManager.TryGetCacheFile(Filename, Parent?.Filename, out CacheFile file, extractIfNotFound))
+                return false;
+
             File = file;
-            return File != null;
+            if(readFormatData)
+                File.ReadFormatData();
+
+            return true;
         }
 
         public void CollapseAll()

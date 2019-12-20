@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Reactive.Linq;
@@ -13,14 +13,14 @@ namespace OGE.ViewModels.TextureViewer
 {
     public class TextureViewerViewModel : ReactiveObject
     {
-        private PegFile _peg;
+        private CacheFile _file;
         private TextureEntryViewModel _selectedItem;
         private FolderBrowserDialog _openFolderDialog = new FolderBrowserDialog();
 
         public PegFile Peg
         {
-            get => _peg;
-            private set => this.RaiseAndSetIfChanged(ref _peg, value);
+            get => _file.PegData;
+            private set => this.RaiseAndSetIfChanged(ref _file.PegData, value);
         }
         public TextureEntryViewModel SelectedItem
         {
@@ -34,9 +34,9 @@ namespace OGE.ViewModels.TextureViewer
         private ObservableAsPropertyHelper<BitmapImage> _currentTexture;
         public BitmapImage CurrentTexture => _currentTexture.Value;
 
-        public TextureViewerViewModel(PegFile peg)
+        public TextureViewerViewModel(CacheFile file)
         {
-            _peg = peg;
+            _file = file;
 
             _textureEntries = this.WhenAnyValue(x => x.Peg)
                 .SelectMany(x => GenerateTextureEntriesList())
@@ -73,7 +73,7 @@ namespace OGE.ViewModels.TextureViewer
 
             if (_openFolderDialog.ShowDialog() == DialogResult.OK)
             {
-                var selectedEntry = _peg.Entries[targetIndex];
+                var selectedEntry = _file.PegData.Entries[targetIndex];
                 string outputPath = $"{_openFolderDialog.SelectedPath}\\{Path.GetFileNameWithoutExtension(selectedEntry.Name)}.png";
                 selectedEntry.Bitmap.Save(outputPath, ImageFormat.Png);
             }
