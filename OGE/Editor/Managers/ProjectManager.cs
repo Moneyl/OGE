@@ -77,13 +77,22 @@ namespace OGE.Editor.Managers
             };
         }
 
-        public static void CopyFileToProjectCache(string filename)
+        public static bool CopyFileToProjectCache(string targetName, string parentName)
+        {
+            //Get parent and call main overload
+            return _cache.TryGetCacheFile(targetName, parentName, out CacheFile parent, true) 
+                   && CopyFileToProjectCache(targetName, parent);
+        }
+
+        public static bool CopyFileToProjectCache(string targetName, CacheFile parent)
         {
             //Check if in editor cache and check if there's a valid project currently loaded
             //If so, check if already in project cache
                     //If so, exit
                     //If not, copy to project cache
                 //Else, exit
+                
+            return false;
         }
     }
 }

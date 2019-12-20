@@ -1,8 +1,9 @@
-using System;
+﻿using System;
 using System.Reactive.Disposables;
 using System.Windows;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using OGE.Editor;
 using OGE.Editor.Events;
 using OGE.Editor.Managers;
 using OGE.ViewModels.TextureViewer;
@@ -107,6 +108,14 @@ namespace OGE.Views.TextureViewer
                 return;
 
             ViewModel.ExtractSingleTexture(TextureList.SelectedIndex);
+        }
+
+        private void ContextMenuReplaceTexture_OnClick(object sender, RoutedEventArgs e)
+        {
+            if (TextureList.SelectedIndex == -1)
+                return;
+
+            ViewModel.ReplaceTexture(TextureList.SelectedIndex);
         }
 
         private void ExtractAllTexturesButton_OnClick(object sender, RoutedEventArgs e)

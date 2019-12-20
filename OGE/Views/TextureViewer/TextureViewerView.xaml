@@ -30,7 +30,8 @@
             <ListBox Name="TextureList" Grid.Row="1" Width="220">
                 <ListBox.ContextMenu>
                     <ContextMenu>
-                        <MenuItem Header="Extract texture" Name="ContextMenuExtractSingleTexture" Click="ContextMenuExtractSingleTexture_OnClick"/>
+                        <MenuItem Header="Extract texture" Click="ContextMenuExtractSingleTexture_OnClick"/>
+                        <MenuItem Header="Replace texture" Click="ContextMenuReplaceTexture_OnClick"/>
                     </ContextMenu>
                 </ListBox.ContextMenu>
             </ListBox>

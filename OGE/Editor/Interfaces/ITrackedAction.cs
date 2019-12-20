@@ -10,6 +10,10 @@ namespace OGE.Editor.Interfaces
     public interface ITrackedAction
     {
         /// <summary>
+        /// Description of the changes made by the action.
+        /// </summary>
+        string Description { get; set; }
+        /// <summary>
         /// Undo the changes made by the action.
         /// </summary>
         void Undo();
