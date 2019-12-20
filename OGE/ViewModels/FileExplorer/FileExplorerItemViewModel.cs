@@ -1,4 +1,4 @@
-﻿using System.IO;
+using System.IO;
 using OGE.Editor;
 using OGE.Editor.Managers;
 using OGE.Utility.Helpers;
@@ -97,8 +97,19 @@ namespace OGE.ViewModels.FileExplorer
                             if(!primitive.Name.Contains(searchTerm))
                                 continue;
 
-                            var explorerItem = new FileExplorerItemViewModel(primitive.Name, this, Depth + 1);
-                            AddChild(explorerItem);
+                            //Todo: Figure out a better way of handling this. Likely other files with this problem
+                            //Check for asm_pc/file name mismatch. Currently only occurs with one file
+                            //The asm has the extension cvbm_pc, when it should be cpeg_pc. Breaking cache operations on it
+                            if (primitive.Name == "interface-badges.cvbm_pc")
+                            {
+                                var explorerItem = new FileExplorerItemViewModel("interface-badges.cpeg_pc", this, Depth + 1);
+                                AddChild(explorerItem);
+                            }
+                            else
+                            {
+                                var explorerItem = new FileExplorerItemViewModel(primitive.Name, this, Depth + 1);
+                                AddChild(explorerItem);
+                            }
                         }
                     }
                 }
