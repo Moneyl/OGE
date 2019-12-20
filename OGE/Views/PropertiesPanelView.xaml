@@ -10,6 +10,8 @@
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800">
     <Grid>
-        <StackPanel Name="DataPanel" Margin="7 0 0 0"/>
+        <ScrollViewer>
+            <StackPanel Name="DataPanel" Margin="7 0 0 0" CanVerticallyScroll="True"/>
+        </ScrollViewer>
     </Grid>
 </reactiveUi:ReactiveUserControl>
