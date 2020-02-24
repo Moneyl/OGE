@@ -7,18 +7,22 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:reactiveUi="http://reactiveui.net"
              xmlns:fileExplorer="clr-namespace:OGE.ViewModels.FileExplorer"
+             xmlns:fa="http://schemas.fontawesome.io/icons/"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800">
     <Grid>
-        <TextBlock Name="ItemName">
-            <TextBlock.ContextMenu>
-                <ContextMenu>
-                    <MenuItem Header="Expand" Click="Expand_OnClick"/>
-                    <MenuItem Header="Collapse" Click="Collapse_OnClick"/>
-                    <MenuItem Header="Collapse all" Click="CollapseAll_OnClick"/>
-                    <MenuItem Header="Collapse this and parents" Click="CollapsePath_OnClick"/>
-                </ContextMenu>
-            </TextBlock.ContextMenu>
-        </TextBlock>
+        <WrapPanel>
+            <fa:FontAwesome Icon="Folder" Name="ItemIcon" Margin="0 1 5 0" FontSize="16"/>
+            <TextBlock Name="ItemName" FontSize="13.5">
+                <TextBlock.ContextMenu>
+                    <ContextMenu>
+                        <MenuItem Header="Expand" Click="Expand_OnClick"/>
+                        <MenuItem Header="Collapse" Click="Collapse_OnClick"/>
+                        <MenuItem Header="Collapse all" Click="CollapseAll_OnClick"/>
+                        <MenuItem Header="Collapse this and parents" Click="CollapsePath_OnClick"/>
+                    </ContextMenu>
+                </TextBlock.ContextMenu>
+            </TextBlock>
+        </WrapPanel>
     </Grid>
 </reactiveUi:ReactiveUserControl>

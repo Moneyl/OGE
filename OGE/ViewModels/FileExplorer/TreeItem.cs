@@ -3,6 +3,8 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Windows.Media;
+using FontAwesome.WPF;
 using ReactiveUI;
 
 namespace OGE.ViewModels.FileExplorer
@@ -11,18 +13,36 @@ namespace OGE.ViewModels.FileExplorer
     {
         private bool _isExpanded;
         private bool _isSelected;
+        private FontAwesomeIcon _icon;
+        private Brush _foregroundBrush;
         private TreeItem _parent;
 
         public bool IsExpanded
         {
             get => _isExpanded;
-            set => this.RaiseAndSetIfChanged(ref _isExpanded, value);
+            set
+            {
+                this.RaiseAndSetIfChanged(ref _isExpanded, value);
+                OnExpansionChanged();
+            }
         }
 
         public bool IsSelected
         {
             get => _isSelected;
             set => this.RaiseAndSetIfChanged(ref _isSelected, value);
+        }
+
+        public FontAwesomeIcon Icon
+        {
+            get => _icon;
+            set => this.RaiseAndSetIfChanged(ref _icon, value);
+        }
+
+        public Brush ForegroundBrush
+        {
+            get => _foregroundBrush;
+            set => this.RaiseAndSetIfChanged(ref _foregroundBrush, value);
         }
 
         public abstract object ViewModel { get; }
@@ -64,6 +84,11 @@ namespace OGE.ViewModels.FileExplorer
         {
             IsExpanded = false;
             _parent?.CollapsePath();
+        }
+
+        protected virtual void OnExpansionChanged()
+        {
+
         }
     }
 }

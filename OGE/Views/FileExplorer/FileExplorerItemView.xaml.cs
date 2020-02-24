@@ -18,6 +18,16 @@ namespace OGE.Views.FileExplorer
                         vm => vm.Filename,
                         v => v.ItemName.Text)
                     .DisposeWith(disposable);
+
+                this.OneWayBind(ViewModel,
+                        vm => vm.Icon,
+                        v => v.ItemIcon.Icon)
+                    .DisposeWith(disposable);
+
+                this.OneWayBind(ViewModel,
+                        vm => vm.ForegroundBrush,
+                        v => v.ItemIcon.Foreground)
+                    .DisposeWith(disposable);
             });
         }
 

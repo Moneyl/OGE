@@ -1,4 +1,7 @@
 ﻿using System.IO;
+using System.Windows.Forms.VisualStyles;
+using System.Windows.Media;
+using FontAwesome.WPF;
 using OGE.Editor;
 using OGE.Editor.Managers;
 using OGE.Utility.Helpers;
@@ -42,6 +45,7 @@ namespace OGE.ViewModels.FileExplorer
             Parent = parent;
             Depth = depth;
             Filename = filename;
+            UpdateIcon();
         }
 
         public bool GetCacheFile(bool extractIfNotFound = false, bool readFormatData = false)
@@ -119,6 +123,42 @@ namespace OGE.ViewModels.FileExplorer
                     }
                 }
             }
+        }
+
+        protected override void OnExpansionChanged()
+        {
+            base.OnExpansionChanged();
+            UpdateIcon();
+        }
+
+        private void UpdateIcon()
+        {
+            Icon = FileExtension switch
+            {
+                ".vpp_pc" => IsExpanded ? FontAwesomeIcon.FolderOpen : FontAwesomeIcon.Folder,
+                ".str2_pc" => IsExpanded ? FontAwesomeIcon.FolderOpen : FontAwesomeIcon.Folder,
+                ".xtbl" => FontAwesomeIcon.FileCodeOutline,
+                ".mtbl" => FontAwesomeIcon.FileCodeOutline,
+                ".dtodx" => FontAwesomeIcon.FileCodeOutline,
+                ".gtodx" => FontAwesomeIcon.FileCodeOutline,
+                ".scriptx" => FontAwesomeIcon.FileCodeOutline,
+                ".cpeg_pc" => FontAwesomeIcon.FileImageOutline,
+                ".gpeg_pc" => FontAwesomeIcon.FileImageOutline,
+                ".cvbm_pc" => FontAwesomeIcon.FileImageOutline,
+                ".gvbm_pc" => FontAwesomeIcon.FileImageOutline,
+                ".xwb_pc" => FontAwesomeIcon.FileAudioOutline,
+                ".rfgzone_pc" => FontAwesomeIcon.MapOutline,
+                ".layer_pc" => FontAwesomeIcon.MapOutline,
+                _ => FontAwesomeIcon.File
+            };
+
+            ForegroundBrush = Icon switch
+            {
+                FontAwesomeIcon.Folder => new SolidColorBrush(Color.FromRgb(216, 172, 106)),
+                FontAwesomeIcon.FolderOpen => new SolidColorBrush(Color.FromRgb(216, 172, 106)),
+                _ => new SolidColorBrush(Color.FromRgb(196, 196, 196))
+            };
+            ForegroundBrush.Freeze();
         }
     }
 }
