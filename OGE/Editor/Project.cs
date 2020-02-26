@@ -10,6 +10,9 @@ using RfgTools.Helpers;
 
 namespace OGE.Editor
 {
+    /// <summary>
+    /// Tracks changes made to files and maintains it's own cache of edited files separate from the global cache.
+    /// </summary>
     public class Project
     {
         private CacheManager _cache;
@@ -20,6 +23,7 @@ namespace OGE.Editor
         public string Description { get; set; }
 
         public string ProjectFolderPath { get; private set; }
+        public string CachePath => $"{ProjectFolderPath}\\Cache\\";
         public Dictionary<CacheFile, List<ITrackedAction>> Changes { get; }
 
         public Project(string projectFolderPath)
@@ -34,20 +38,19 @@ namespace OGE.Editor
 
         }
 
+        //Todo: Consider splitting changes into separate file to keep settings/metadata terse and accessible
         public void Save(string outputPath = null)
         {
             //Xml file representation in memory
             var xml = new XDocument();
 
             //Add root node. Required for xml
-            var root = new XElement("root");
+            var root = new XElement("Project", new XAttribute("Name", Name));
             xml.Add(root);
-            var projectElement = new XElement("Project", new XAttribute("Name", Name));
-            root.Add(projectElement);
 
-            projectElement.Add(new XElement("Author", Author));
-            projectElement.Add(new XElement("Version", Version));
-            projectElement.Add(new XElement("Description", Description));
+            root.Add(new XElement("Author", Author));
+            root.Add(new XElement("Version", Version));
+            root.Add(new XElement("Description", Description));
 
             var changesElement = new XElement("Changes");
             foreach (var cacheFile in Changes)
@@ -76,11 +79,10 @@ namespace OGE.Editor
             using var settingsFileStream = new FileStream(inputPath, FileMode.Open);
             var document = XDocument.Load(settingsFileStream);
 
-            var root = document.Root;
-            if (root == null)
+            var projectElement = document.Root;
+            if (projectElement == null)
                 throw new XmlException("Error! Project file has no root node!");
 
-            var projectElement = root.GetRequiredElement("Project");
             Author = projectElement.GetRequiredValue("Author");
             Version = projectElement.GetRequiredValue("Version");
             Description = projectElement.GetRequiredValue("Description");
@@ -140,6 +142,31 @@ namespace OGE.Editor
                 return true;
             }
             return false;
+        }
+
+        public bool IsFileCached(string targetName, string parentName = null)
+        {
+            return _cache.IsFileCached(targetName, parentName);
+        }
+
+        public bool TryGetCacheFile(string targetName, string parentName, out CacheFile target, bool extractIfNotCached = false)
+        {
+            return _cache.TryGetCacheFile(targetName, parentName, out target, extractIfNotCached);
+        }
+
+        public bool TryGetFile(string targetName, string parentName, out Stream stream)
+        {
+            return _cache.TryGetFile(targetName, parentName, out stream);
+        }
+
+        public bool TryGetFile(string targetFilename, CacheFile parent, out Stream stream)
+        {
+            return _cache.TryGetFile(targetFilename, parent, out stream);
+        }
+
+        public CacheFile CopyToCache(CacheFile target)
+        {
+            return _cache.CopyToCache(target);
         }
     }
 }

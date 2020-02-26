@@ -107,7 +107,7 @@ namespace OGE.ViewModels.TextureViewer
                 var selectedEntry = _file.PegData.Entries[targetIndex];
 
                 var replaceAction = new TextureReplaceAction();
-                replaceAction.Init(_file, selectedEntry, inputPath);
+                replaceAction.Init(_file, targetIndex, inputPath);
 
                 ForceTextureViewUpdate();
             }

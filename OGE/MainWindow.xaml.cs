@@ -1,8 +1,10 @@
 ﻿using System;
 using System.IO;
+using System.Linq;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Media;
 using System.Xml;
 using DynamicData.Kernel;
@@ -97,7 +99,7 @@ namespace OGE
 
                 if (PathHelpers.IsTextExtension(targetItem.FileExtension))
                 {
-                    if (!ProjectManager.TryGetFile(targetItem.Filename, targetItem.Parent.File, out Stream docStream))
+                    if (!ProjectManager.TryGetFile(targetItem.Filename, targetItem.Parent.File.Filename, out Stream docStream))
                         return;
 
                     using StreamReader reader = new StreamReader(docStream);
