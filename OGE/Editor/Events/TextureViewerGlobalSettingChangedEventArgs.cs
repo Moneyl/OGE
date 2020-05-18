@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace OGE.Editor.Events
+﻿namespace OGE.Editor.Events
 {
     /// <summary>
     /// Used to tell every texture viewer document that the global settings for

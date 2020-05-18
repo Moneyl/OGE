@@ -6,13 +6,18 @@ namespace OGE.Utility.Helpers
     public static class PathHelpers
     {
         private static List<string> _packfileExtensions = new List<string>
-            {".vpp_pc", ".str2_pc"};
+        {
+            ".vpp_pc", ".str2_pc"
+        };
         private static List<string> _xmlExtensions = new List<string>
-            {".xml", ".xtbl", ".mtbl", ".gtodx", ".dtodx", ".vint_proj"};
+        {
+            ".xml", ".xtbl", ".mtbl", ".gtodx", ".dtodx", ".vint_proj",
+            ".scriptx"
+        };
         private static List<string> _textExtensions = new List<string>
         {
             ".xml", ".xtbl", ".mtbl", ".gtodx", ".dtodx", ".vint_proj",
-            ".txt", ".lua"
+            ".txt", ".lua", ".scriptx"
         };
         private static List<string> _textureExtensions = new List<string>
         {

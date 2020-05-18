@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Reactive.Disposables;
-using System.Reactive.Linq;
 using System.Windows;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using OGE.Editor;
 using OGE.Editor.Events;
 using OGE.Editor.Managers;
 using OGE.ViewModels.TextureViewer;
@@ -22,10 +22,10 @@ namespace OGE.Views.TextureViewer
 
         }
 
-        public TextureViewerView(PegFile peg)
+        public TextureViewerView(CacheFile file)
         {
             InitializeComponent();
-            ViewModel = new TextureViewerViewModel(peg);
+            ViewModel = new TextureViewerViewModel(file);
             _checkeredImageBrush = (ImageBrush)ImageViewBorder.Background; //Save checkered background for toggling between dark background
 
             //Set initial checkbox value to global setting and update.
@@ -108,6 +108,14 @@ namespace OGE.Views.TextureViewer
                 return;
 
             ViewModel.ExtractSingleTexture(TextureList.SelectedIndex);
+        }
+
+        private void ContextMenuReplaceTexture_OnClick(object sender, RoutedEventArgs e)
+        {
+            if (TextureList.SelectedIndex == -1)
+                return;
+
+            ViewModel.ReplaceTexture(TextureList.SelectedIndex);
         }
 
         private void ExtractAllTexturesButton_OnClick(object sender, RoutedEventArgs e)

@@ -73,17 +73,22 @@ namespace OGE.ViewModels.FileExplorer
                     WorkingDirectory = action.NewWorkingDirectory;
                     ReloadFilesList();
                 });
+            MessageBus.Current.Listen<FileExplorerCollapseAllEventArgs>()
+                .Throttle(TimeSpan.FromMilliseconds(500))
+                .Subscribe(HandleCollapseAllEvent);
         }
 
+        //Todo: Figure out way to make this asynchronous, and show loading indicator
         public void ReloadFilesList()
         {
             FileList.Clear();
-            
-            //Assuming that any packfile in this list is already confirmed to be a packfile by ProjectManager
-            foreach (var packfile in ProjectManager.WorkingDirectoryPackfiles)
-            {
-                var explorerItem = new FileExplorerItemViewModel(packfile.PackfilePath, null, packfile, true);
 
+            foreach (var cacheFile in ProjectManager.EditorCacheFiles)
+            {
+                if(cacheFile.Depth != 0)
+                    continue;
+
+                var explorerItem = new FileExplorerItemViewModel(cacheFile.Filename, null, 0, cacheFile);
                 explorerItem.FillChildrenList(SearchTerm);
                 FileList.Add(explorerItem);
             }
@@ -92,6 +97,15 @@ namespace OGE.ViewModels.FileExplorer
         private void TriggerSelectedItemChangedEvent()
         {
             MessageBus.Current.SendMessage(new SelectedItemChangedEventArgs(_selectedItem));
+        }
+
+        private void HandleCollapseAllEvent(FileExplorerCollapseAllEventArgs args)
+        {
+            foreach(var treeItem in FileList)
+            {
+                var explorerItem = (FileExplorerItemViewModel)treeItem;
+                explorerItem.CollapseAll();
+            }
         }
     }
 }

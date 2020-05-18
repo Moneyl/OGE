@@ -35,6 +35,11 @@
         <mah:WindowCommands>
             <Menu Margin="5 5 0 0">
                 <MenuItem Header="File">
+                    <MenuItem Header="Open project" Name="MenuOpenProjectButton"/>
+                    <MenuItem Header="New project" Name="MenuNewProjectButton" Click="MenuNewProjectButton_OnClick"/>
+                    <MenuItem Header="Save project" Name="MenuSaveProjectButton"/>
+                    <MenuItem Header="Close project" Name="MenuCloseProjectButton"/>
+                    <Separator/>
                     <MenuItem Header="Exit" Click="MenuExit_OnClick"/>
                 </MenuItem>
                 <MenuItem Header="View"/>
@@ -81,6 +86,10 @@
 
                             <avalonDock:LayoutAnchorable ContentId="ToolWindow2" Title="Find in files">
                                 <TextBox Text="Toolwindow2 contents"/>
+                            </avalonDock:LayoutAnchorable>
+
+                            <avalonDock:LayoutAnchorable>
+                                <ListBox Name="someListbox"></ListBox>
                             </avalonDock:LayoutAnchorable>
                         </avalonDock:LayoutAnchorablePane>
                     </avalonDock:LayoutAnchorablePaneGroup>

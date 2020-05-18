@@ -1,10 +1,13 @@
 ﻿using System.Collections.Generic;
+using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Windows.Media.Imaging;
+using OGE.Editor;
+using OGE.Editor.Actions;
 using OGE.Utility.Helpers;
 using ReactiveUI;
 using RfgTools.Formats.Textures;
@@ -13,24 +16,28 @@ namespace OGE.ViewModels.TextureViewer
 {
     public class TextureViewerViewModel : ReactiveObject
     {
-        private PegFile _peg;
+        private CacheFile _file;
         private TextureEntryViewModel _selectedItem;
         private FolderBrowserDialog _openFolderDialog = new FolderBrowserDialog();
+        private OpenFileDialog _openFileDialog = new OpenFileDialog();
+        private bool _textureViewNeedsUpdate = false;
 
-        public string CpuFilePath { get; private set; }
-        public string GpuFilePath { get; private set; }
-        public string CpuFileName { get; private set; }
-        public string GpuFileName { get; private set; }
         public PegFile Peg
         {
-            get => _peg;
-            private set => this.RaiseAndSetIfChanged(ref _peg, value);
+            get => _file.PegData;
+            private set => this.RaiseAndSetIfChanged(ref _file.PegData, value);
         }
         public TextureEntryViewModel SelectedItem
         {
             get => _selectedItem;
             set => this.RaiseAndSetIfChanged(ref _selectedItem, value);
         }
+        public bool TextureViewNeedsUpdate
+        {
+            get => _textureViewNeedsUpdate;
+            set => this.RaiseAndSetIfChanged(ref _textureViewNeedsUpdate, value);
+        }
+
         
         private ObservableAsPropertyHelper<IEnumerable<TextureEntryViewModel>> _textureEntries;
         public IEnumerable<TextureEntryViewModel> TextureEntries => _textureEntries.Value;
@@ -38,16 +45,16 @@ namespace OGE.ViewModels.TextureViewer
         private ObservableAsPropertyHelper<BitmapImage> _currentTexture;
         public BitmapImage CurrentTexture => _currentTexture.Value;
 
-        public TextureViewerViewModel(PegFile peg)
+        public TextureViewerViewModel(CacheFile file)
         {
-            _peg = peg;
+            _file = file;
 
             _textureEntries = this.WhenAnyValue(x => x.Peg)
                 .SelectMany(x => GenerateTextureEntriesList())
                 .ToProperty(this, x => x.TextureEntries);
 
-            _currentTexture = this.WhenAnyValue(x => x.SelectedItem)
-                .Where(x => x != null && x.Index >= 0 && x.Index < Peg.Entries.Count)
+            _currentTexture = this.WhenAnyValue(x => x.SelectedItem, x => x.TextureViewNeedsUpdate)
+                .Where(x => x.Item1 != null && x.Item1.Index >= 0 && x.Item1.Index < Peg.Entries.Count)
                 .Select(x => GetSelectedTextureBitmap())
                 .ToProperty(this, x => x.CurrentTexture);
         }
@@ -67,7 +74,12 @@ namespace OGE.ViewModels.TextureViewer
 
         private BitmapImage GetSelectedTextureBitmap()
         {
-            return ImageHelpers.BitmapToBitmapImage(Peg.Entries[SelectedItem.Index].Bitmap);
+            return ImageHelpers.BitmapToBitmapImage(Peg.GetEntryBitmap(SelectedItem.Index));
+        }
+
+        public void ForceTextureViewUpdate()
+        {
+            TextureViewNeedsUpdate = !TextureViewNeedsUpdate;
         }
 
         public void ExtractSingleTexture(int targetIndex)
@@ -77,9 +89,28 @@ namespace OGE.ViewModels.TextureViewer
 
             if (_openFolderDialog.ShowDialog() == DialogResult.OK)
             {
-                var selectedEntry = _peg.Entries[targetIndex];
+                var selectedEntry = _file.PegData.Entries[targetIndex];
                 string outputPath = $"{_openFolderDialog.SelectedPath}\\{Path.GetFileNameWithoutExtension(selectedEntry.Name)}.png";
-                selectedEntry.Bitmap.Save(outputPath, ImageFormat.Png);
+                var bitmap = _file.PegData.GetEntryBitmap(targetIndex);
+                bitmap.Save(outputPath, ImageFormat.Png);
+            }
+        }
+
+        public void ReplaceTexture(int targetIndex)
+        {
+            if(Peg == null || Peg.Entries.Count <= 0)
+                return;
+
+            //Todo: Move into TextureReplaceAction and track in project
+            if(_openFileDialog.ShowDialog() == DialogResult.OK)
+            {
+                string inputPath = _openFileDialog.FileName;
+                var selectedEntry = _file.PegData.Entries[targetIndex];
+
+                var replaceAction = new TextureReplaceAction();
+                replaceAction.Init(_file, targetIndex, inputPath);
+
+                ForceTextureViewUpdate();
             }
         }
 
@@ -93,7 +124,8 @@ namespace OGE.ViewModels.TextureViewer
                 foreach (var entry in Peg.Entries)
                 {
                     string outputPath = $"{_openFolderDialog.SelectedPath}\\{Path.GetFileNameWithoutExtension(entry.Name)}.png";
-                    entry.Bitmap.Save(outputPath, ImageFormat.Png);
+                    var bitmap = _file.PegData.GetEntryBitmap(entry);
+                    bitmap.Save(outputPath, ImageFormat.Png);
                 }
             }
         }
