@@ -23,6 +23,7 @@ namespace OGE.Editor
         public bool InProjectCache { get; set; } = false;
         public uint Depth { get; set; } = 0;
 
+        //Todo: Figure out a less dumb way to store format data
         public Packfile PackfileData = null;
         public PegFile PegData = null;
         public AsmFile AsmData = null;

@@ -1,4 +1,5 @@
-﻿using System.Reactive;
+﻿using System.IO;
+using System.Reactive;
 using System.Windows.Forms;
 using OGE.Editor.Managers;
 using ReactiveUI;
@@ -28,8 +29,10 @@ namespace OGE.ViewModels
             });
             OpenProjectCommand = ReactiveCommand.Create(() =>
             {
-                _openFileDialog.ShowDialog();
-                ProjectManager.OpenProject(_openFileDialog.FileName);
+                if (_openFileDialog.ShowDialog() == DialogResult.OK && File.Exists(_openFileDialog.FileName))
+                {
+                    ProjectManager.OpenProject(_openFileDialog.FileName);
+                }
             });
             SaveProjectCommand = ReactiveCommand.Create(() =>
             {

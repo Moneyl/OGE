@@ -1,10 +1,16 @@
 using System.Collections.Generic;
 using System.IO;
+using OGE.Editor.Interfaces;
 
 namespace OGE.Editor.Managers
 {
     //Todo: Keep undo/redo stack and track changes
     //Todo: Generate modinfo.xml from changes
+    /// <summary>
+    /// Class for managing projects and providing way to get files from cache without worrying about,
+    /// if they're in the global cache or project cache.
+    /// </summary>
+    /// <remarks>API is largely up in the air and experimental as the needs of the caching system aren't fully know yet</remarks>
     public static class ProjectManager
     {
         private static CacheManager _cache;
@@ -29,29 +35,37 @@ namespace OGE.Editor.Managers
             WorkingDirectory = initialWorkingDirectory;
         }
 
+        //Todo: Update these TryGet functions to also support project cache
         public static bool TryGetCacheFile(string targetName, string parentName, out CacheFile target, bool extractIfNotCached = false)
         {
-            return _cache.TryGetCacheFile(targetName, parentName, out target, extractIfNotCached);
+            if (CurrentProject == null)
+                return _cache.TryGetCacheFile(targetName, parentName, out target, extractIfNotCached);
+
+            return CurrentProject.TryGetCacheFile(targetName, parentName, out target)
+                   || _cache.TryGetCacheFile(targetName, parentName, out target, extractIfNotCached);
         }
 
-        public static bool TryGetFile(string targetFilename, string parentName, out Stream stream)
+        public static bool TryGetFile(string targetFilename, string parentName, out Stream stream, bool extractIfNotCached = false)
         {
-            return _cache.TryGetFile(targetFilename, parentName, out stream);
-        }
+            if(CurrentProject == null)
+                return _cache.TryGetFile(targetFilename, parentName, out stream, extractIfNotCached);
 
-        public static bool TryGetFile(string targetFilename, CacheFile parent, out Stream stream)
-        {
-            return _cache.TryGetFile(targetFilename, parent, out stream);
+            return CurrentProject.TryGetFile(targetFilename, parentName, out stream)
+                   || _cache.TryGetFile(targetFilename, parentName, out stream, extractIfNotCached);
         }
 
         public static bool IsFileCached(string targetName, string parentName)
         {
-            return _cache.IsFileCached(targetName, parentName);
+            if(CurrentProject == null) 
+                return _cache.IsFileCached(targetName, parentName);
+
+            return CurrentProject.IsFileCached(targetName, parentName)
+                   || _cache.IsFileCached(targetName, parentName);
         }
 
         public static void OpenProject(string projectFilePath)
         {
-            CurrentProject = new Project(projectFilePath);
+            CurrentProject = new Project($"{Path.GetDirectoryName(projectFilePath)}\\");
             CurrentProject.Load(projectFilePath);
         }
 
@@ -77,22 +91,31 @@ namespace OGE.Editor.Managers
             };
         }
 
-        public static bool CopyFileToProjectCache(string targetName, string parentName)
+        public static bool CopyFileToProjectCache(string targetName, string parentName, out CacheFile projectCacheFile)
         {
+            projectCacheFile = null;
             //Get parent and call main overload
             return _cache.TryGetCacheFile(targetName, parentName, out CacheFile parent, true) 
-                   && CopyFileToProjectCache(targetName, parent);
+                   && CopyFileToProjectCache(targetName, parent, out projectCacheFile);
         }
 
-        public static bool CopyFileToProjectCache(string targetName, CacheFile parent)
+        public static bool CopyFileToProjectCache(string targetName, CacheFile parent, out CacheFile projectCacheFile)
         {
-            //Check if in editor cache and check if there's a valid project currently loaded
-            //If so, check if already in project cache
-                    //If so, exit
-                    //If not, copy to project cache
-                //Else, exit
-                
-            return false;
+            projectCacheFile = null;
+            //Confirm file exists in global cache, extract if not. If fail to get from global cache, return false
+            if (CurrentProject == null || !_cache.TryGetCacheFile(targetName, parent.Filename, out var targetFile, true))
+                return false;
+
+            //If file is in project cache, get it, if not, copy to project cache and get copy
+            if(!CurrentProject.TryGetCacheFile(targetName, parent.Filename, out projectCacheFile))
+                projectCacheFile = CurrentProject.CopyToCache(targetFile);
+            
+            return true;
+        }
+
+        public static void AddChange(CacheFile editedFile, ITrackedAction change)
+        {
+
         }
     }
 }

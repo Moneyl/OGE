@@ -78,6 +78,7 @@ namespace OGE.ViewModels.FileExplorer
                 .Subscribe(HandleCollapseAllEvent);
         }
 
+        //Todo: Figure out way to make this asynchronous, and show loading indicator
         public void ReloadFilesList()
         {
             FileList.Clear();

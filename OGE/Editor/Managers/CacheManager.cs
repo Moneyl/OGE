@@ -1,11 +1,16 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Windows.Forms.Design;
 using OGE.Utility;
 using OGE.Utility.Helpers;
 
 namespace OGE.Editor.Managers
 {
+    /// <summary>
+    /// Provides way to access and cache the subfiles of RFG packfiles (vpp_pc and str2_pc).
+    /// The goal of this is to avoid extracting a subfile more than once.
+    /// </summary>
     public class CacheManager
     {
         private string _workingDirectory;
@@ -140,15 +145,15 @@ namespace OGE.Editor.Managers
             }
         }
 
-        public bool TryGetFile(string targetName, string parentName, out Stream stream)
+        public bool TryGetFile(string targetName, string parentName, out Stream stream, bool extractIfNotCached = false)
         {
             stream = Stream.Null;
             //Try to get parent CacheFile
-            if (!TryGetCacheFile(parentName, null, out CacheFile parent))
+            if (!TryGetCacheFile(targetName, parentName, out CacheFile target, extractIfNotCached))
                 return false;
 
             //Call main function
-            return TryGetFile(targetName, parent, out stream);
+            return target.TryOpenOrGet(out stream);
         }
 
         public bool TryGetFile(string targetFilename, CacheFile parent, out Stream stream)
@@ -309,6 +314,32 @@ namespace OGE.Editor.Managers
             parentName = result[0];
             childName = result[1];
             return true;
+        }
+
+        public CacheFile CopyToCache(CacheFile target)
+        {
+            //Make CacheFile copy
+            var targetCopy = new CacheFile(target.Filename, target.ParentName, CachePath)
+            {
+                Depth = target.Depth
+            };
+            Directory.CreateDirectory($"{CachePath}\\{target.Key}\\");
+
+            //For depth 0 files assume they have no parent, don't copy file, just make directory
+            if (target.Depth != 0)
+            {
+                if (target.Parent != null)
+                {
+                    targetCopy.Parent = CopyToCache(target.Parent);
+                    Directory.CreateDirectory($"{CachePath}\\{target.Parent.Key}\\");
+                }
+
+                File.Copy(target.FilePath, targetCopy.FilePath);
+            }
+
+            //Add copy to file list
+            _cacheFiles.Add(targetCopy);
+            return targetCopy;
         }
     }
 }

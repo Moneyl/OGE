@@ -74,7 +74,7 @@ namespace OGE.ViewModels.TextureViewer
 
         private BitmapImage GetSelectedTextureBitmap()
         {
-            return ImageHelpers.BitmapToBitmapImage(Peg.Entries[SelectedItem.Index].Bitmap);
+            return ImageHelpers.BitmapToBitmapImage(Peg.GetEntryBitmap(SelectedItem.Index));
         }
 
         public void ForceTextureViewUpdate()
@@ -91,7 +91,8 @@ namespace OGE.ViewModels.TextureViewer
             {
                 var selectedEntry = _file.PegData.Entries[targetIndex];
                 string outputPath = $"{_openFolderDialog.SelectedPath}\\{Path.GetFileNameWithoutExtension(selectedEntry.Name)}.png";
-                selectedEntry.Bitmap.Save(outputPath, ImageFormat.Png);
+                var bitmap = _file.PegData.GetEntryBitmap(targetIndex);
+                bitmap.Save(outputPath, ImageFormat.Png);
             }
         }
 
@@ -107,7 +108,7 @@ namespace OGE.ViewModels.TextureViewer
                 var selectedEntry = _file.PegData.Entries[targetIndex];
 
                 var replaceAction = new TextureReplaceAction();
-                replaceAction.Init(_file, selectedEntry, inputPath);
+                replaceAction.Init(_file, targetIndex, inputPath);
 
                 ForceTextureViewUpdate();
             }
@@ -123,7 +124,8 @@ namespace OGE.ViewModels.TextureViewer
                 foreach (var entry in Peg.Entries)
                 {
                     string outputPath = $"{_openFolderDialog.SelectedPath}\\{Path.GetFileNameWithoutExtension(entry.Name)}.png";
-                    entry.Bitmap.Save(outputPath, ImageFormat.Png);
+                    var bitmap = _file.PegData.GetEntryBitmap(entry);
+                    bitmap.Save(outputPath, ImageFormat.Png);
                 }
             }
         }

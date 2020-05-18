@@ -87,6 +87,10 @@
                             <avalonDock:LayoutAnchorable ContentId="ToolWindow2" Title="Find in files">
                                 <TextBox Text="Toolwindow2 contents"/>
                             </avalonDock:LayoutAnchorable>
+
+                            <avalonDock:LayoutAnchorable>
+                                <ListBox Name="someListbox"></ListBox>
+                            </avalonDock:LayoutAnchorable>
                         </avalonDock:LayoutAnchorablePane>
                     </avalonDock:LayoutAnchorablePaneGroup>
 
