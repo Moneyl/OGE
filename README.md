@@ -1,3 +1,5 @@
+Note: This project is no longer in development. The successor to it is here: https://github.com/Moneyl/Nanoforge. This project initially fizzled out due to my waning interest and some packfile packing bugs I couldn't fix. Nanoforge was originally only going to be a file viewer, but once those packfile packing bugs were fixed I decided to start adding editing features. With that it now has the same goals that OGE started with.
+
 # OGE
 Open Guerrilla Editor. An open source modding tool for Red Faction Guerrilla. Still in it's very early stages. The current goal is to make a comprehensive modding tool for RFG that automates some things that people used to do by hand such as updating asm_pc files, and eliminates the need for multiple command line tools. As it's expanded some existing tools like the [new texture editor](https://github.com/Moneyl/RFG-Texture-Editor-Redux) will likely be merged with this tool since there are some convenience features that can be provided by having both tools in one program.
 
